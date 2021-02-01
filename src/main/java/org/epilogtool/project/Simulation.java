@@ -13,13 +13,16 @@ import java.util.Set;
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
+import org.colomoto.biolqm.tool.simulation.BaseUpdater;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
 import org.colomoto.biolqm.tool.simulation.multiplesuccessor.PriorityUpdater;
+import org.colomoto.biolqm.tool.simulation.random.RandomUpdaterWithRates;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.RandCentral;
 import org.epilogtool.common.Tuple2D;
 import org.epilogtool.core.Epithelium;
 import org.epilogtool.core.EpitheliumGrid;
+import org.epilogtool.core.Rates;
 import org.epilogtool.core.UpdateCells;
 import org.epilogtool.integration.IFEvaluation;
 import org.epilogtool.integration.IntegrationFunctionExpression;
@@ -41,7 +44,7 @@ public class Simulation {
 	private boolean hasCycle;
 	// Perturbed models cache - avoids repeatedly computing perturbations at
 	// each step
-	private Map<LogicalModel, Map<LogicalModelPerturbation, PriorityUpdater>> updaterCache;
+	private Map<LogicalModel, Map<LogicalModelPerturbation, BaseUpdater>> updaterCache;
 
 	/**
 	 * Initializes the simulation. It is called after creating and epithelium.
@@ -76,10 +79,10 @@ public class Simulation {
 		this.buildPriorityUpdaterCache();
 	}
 
-	private void buildPriorityUpdaterCache() {
+	private void buildPriorityUpdaterCache() { 
 		// updaterCache stores the PriorityUpdater to avoid unnecessary
 		// computing
-		this.updaterCache = new HashMap<LogicalModel, Map<LogicalModelPerturbation, PriorityUpdater>>();
+		this.updaterCache = new HashMap<LogicalModel, Map<LogicalModelPerturbation, BaseUpdater>>();
 		for (int y = 0; y < this.getCurrentGrid().getY(); y++) {
 			for (int x = 0; x < this.getCurrentGrid().getX(); x++) {
 				if (this.getCurrentGrid().isEmptyCell(x, y)) {
@@ -88,16 +91,27 @@ public class Simulation {
 				LogicalModel m = this.getCurrentGrid().getModel(x, y);
 				LogicalModelPerturbation ap = this.epithelium.getEpitheliumGrid().getPerturbation(x, y);
 				if (!this.updaterCache.containsKey(m)) {
-					this.updaterCache.put(m, new HashMap<LogicalModelPerturbation, PriorityUpdater>());
+					this.updaterCache.put(m, new HashMap<LogicalModelPerturbation, BaseUpdater>());
 				}
 				if (!this.updaterCache.get(m).containsKey(ap)) {
 					// Apply model perturbation
 					LogicalModel perturb = (ap == null) ? m : ap.apply(m);
-					// Get Priority classes
-					ModelGrouping mpc = this.epithelium.getPriorityClasses(m);
-					// FIXME PriorityUpdater does not receive the "modified" model anymore
-					mpc = mpc.cloneWithModel(perturb);
-					PriorityUpdater updater = new PriorityUpdater(mpc);
+					
+					// Get the active updating scheme
+					Boolean active = this.epithelium.getActive(m);
+					BaseUpdater updater = null;
+					if (active) { // PC
+						// Get Priority classes
+						ModelGrouping mpc = this.epithelium.getPriorityClasses(m);
+						// FIXME PriorityUpdater does not receive the "modified" model anymore
+						mpc = mpc.cloneWithModel(perturb);
+						updater = new PriorityUpdater(mpc);
+					} else {
+						// Get Rates
+						Rates rates = this.epithelium.getRates(m);
+						updater = new RandomUpdaterWithRates(m,rates.getAllRates());						
+					}
+					
 					this.updaterCache.get(m).put(ap, updater);
 				}
 			}
@@ -190,7 +204,9 @@ public class Simulation {
 		byte[] currState = currGrid.getCellState(x, y).clone();
 		LogicalModel m = currGrid.getModel(x, y);
 		LogicalModelPerturbation ap = currGrid.getPerturbation(x, y);
-		PriorityUpdater updater = this.updaterCache.get(m).get(ap);
+		
+		// !!!!!!!!
+		BaseUpdater updater = this.updaterCache.get(m).get(ap);
 
 		// 2. Update integration components
 		for (NodeInfo node :this.epithelium.getIntegrationNodes()) {
@@ -208,7 +224,23 @@ public class Simulation {
 				currState[m.getComponents().indexOf(node)] = target;
 			}
 		}}
-		List<byte[]> succ = updater.getSuccessors(currState);
+		
+		// get the active updating scheme
+		Boolean active = this.epithelium.getActive(m);
+		List<byte[]> succ = new ArrayList<byte[]>();
+		if (active) {
+			// cast to PC updater, get successors
+			succ = ((PriorityUpdater) updater).getSuccessors(currState);
+		} else {
+			// cast to Random updater, get successor
+			byte[] randomSucc = ((RandomUpdaterWithRates) updater).pickSuccessor(currState);
+			if (randomSucc == null) 
+				succ = null;
+			else {
+			succ.add(randomSucc);
+			}
+		}
+		
 		if (succ == null || succ.size() == 0) {
 			return currState;
 		} else if (succ.size() > 1) {

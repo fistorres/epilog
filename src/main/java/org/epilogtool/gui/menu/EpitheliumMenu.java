@@ -16,7 +16,7 @@ public class EpitheliumMenu {
 
 		menu.add(new NewEpiAction());
 		menu.add(new DeleteEpiAction());
-		menu.add(new EditEpiAction());
+		menu.add(new EditEpiAction()); 
 		menu.add(new CloneEpiAction());
 
 		return menu;

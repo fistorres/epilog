@@ -63,7 +63,7 @@ public class JComboImageBox<E> extends JComboBox<E> {
 			}
 
 			// Set the icon and text. If icon was null, say so.
-			ImageIcon icon = selectedImages[selectedIndex];
+			ImageIcon icon = selectedImages[selectedIndex]; 
 			String descr = selectedDescr[selectedIndex];
 			setIcon(icon);
 			if (icon != null) {

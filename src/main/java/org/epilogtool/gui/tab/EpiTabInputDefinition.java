@@ -93,12 +93,16 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 		JPanel jpNLeft = new JPanel(new BorderLayout());
 		//
 		JPanel jpNRight = new JPanel(new BorderLayout());
+
 		jpNorth.add(jpNRight, BorderLayout.CENTER);
 		this.center.add(jpNorth, BorderLayout.NORTH);
 		//
 		this.jpNRTop = new JPanel(new FlowLayout());
+		this.jpNRTop.setBackground(Color.cyan);
+
 		jpNRight.add(this.jpNRTop, BorderLayout.NORTH);
-		this.jpNRBottom = new JPanel(new GridBagLayout());
+		this.jpNRBottom = new JPanel(new GridBagLayout()); 
+		this.jpNRBottom.setBackground(Color.pink);
 		jpNRight.add(this.jpNRBottom, BorderLayout.CENTER);
 		//
 		jpNorth.add(jpNLeft, BorderLayout.LINE_START);
@@ -235,6 +239,7 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 		ButtonGroup groupRole = new ButtonGroup();
 		this.jpNRTop.add(new JLabel(this.activeNodeID + ": "));
 		JRadioButton jrModelInput = new JRadioButton("Positional input");
+		
 		jrModelInput.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -306,8 +311,9 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 		}
 
 		NodeInfo node = Project.getInstance().getProjectFeatures().getNodeInfo(this.activeNodeID);
-
 		ComponentIntegrationFunctions cfi = this.epithelium.getIntegrationFunctionsForComponent(node);
+		
+		//  if it doesn't change 
 		if (cfi != null) {
 			List<String> lFunctions = cfi.getFunctions();
 			if (lFunctions.size() >= value) {
@@ -317,10 +323,10 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 			}
 		}
 		tpc.setChanged();
-	}
-
+	} 
+	
 	private void getNoInputTextField() {
-		this.jpNRBottom.removeAll();
+		this.jpNRBottom.removeAll(); 
 		this.jpNRTop.removeAll();
 		this.jpInputComp.setVisible(false);
 		this.activeNodeID = null;
@@ -386,7 +392,7 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 	protected void buttonReset() {
 		this.userIntegrationFunctions = this.epithelium.getIntegrationFunctions().clone();
 		this.updateNodeID();
-		// Repaint
+		// Repaint 
 		this.getParent().repaint();
 	}
 
@@ -436,6 +442,7 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 		return false;
 	}
 
+	// model selected
 	@Override
 	public void applyChange() {
 
@@ -449,6 +456,6 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 		this.jccbSBML.updateItemList(newModelList);
 
 		updateComponentList(this.jccbSBML.getSelectedItems());
-
+ 
 	}
 }

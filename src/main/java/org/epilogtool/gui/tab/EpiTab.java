@@ -20,7 +20,7 @@ public abstract class EpiTab extends JPanel {
 	public static final String TOOL_SIMULATION = Txt.get("s_TOOL_SIMULATION");
 	public static final String TOOL_MONTECARLO = Txt.get("s_TOOL_MONTECARLO");
 
-	protected Epithelium epithelium;
+	protected Epithelium epithelium; 
 	protected TreePath path;
 	protected boolean isInitialized;
 	protected TabChangeNotifyProj tabChanged;

@@ -181,7 +181,7 @@ public class DialogNewEpithelium extends EscapableDialog {
 				.getManager().getTopologyDescriptions());
 		String[] names = new String[lDescs.size()];
 		for (int i = 0; i < lDescs.size(); i++) {
-			names[i] = lDescs.get(i);
+			names[i] = lDescs.get(i); 
 		}
 		this.jcbLayout = new JComboImageBox<String>(names);
 		c.gridx = 1;

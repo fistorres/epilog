@@ -243,7 +243,7 @@ public class ProjectFeatures {
 			this.nodeColor.put(nodeID, color);
 		}
 	}
-
+	
 	/**
 	 * This function renames the model.
 	 * 

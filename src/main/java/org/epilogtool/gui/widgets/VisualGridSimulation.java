@@ -8,7 +8,9 @@ import java.awt.Polygon;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +124,7 @@ public class VisualGridSimulation extends VisualGrid {
 							byte max = Project.getInstance().getProjectFeatures().getNodeInfo(nodeID).getMax();
 							int index = this.epiGrid.getNodeIndex(x, y, nodeID);
 							if (index >= 0) { // if cell has nodeID
-								byte value = this.epiGrid.getCellState(x, y)[index];
+								byte value = this.epiGrid.getCellState(x, y)[index]; ///
 								if (value > 0) {
 									lColors.add(ColorUtils.getColorAtValue(cBase, max, value));
 								}

@@ -17,7 +17,7 @@ public class NotificationManager {
 		this.lNotifNew = new ArrayList<Notification>();
 		this.lNotifOld = new ArrayList<Notification>();
 		this.gui = true;
-	}
+	} 
 
 	private static NotificationManager getManager() {
 		if (NotificationManager.instance == null) {

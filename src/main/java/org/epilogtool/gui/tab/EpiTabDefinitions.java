@@ -21,7 +21,7 @@ import org.epilogtool.gui.EpiGUI.TabChangeNotifyProj;
 public abstract class EpiTabDefinitions extends EpiTab {
 	private static final long serialVersionUID = -2587480492648550086L;
 
-	protected JPanel center;
+	protected JPanel center; 
 	private JPanel south;
 
 	protected EpiTabDefinitions(Epithelium e, TreePath path, TabChangeNotifyProj tabChanged) {
@@ -37,8 +37,10 @@ public abstract class EpiTabDefinitions extends EpiTab {
 	private void initializeGUI() {
 		this.setLayout(new BorderLayout());
 		center = new JPanel();
+		this.center.setBackground(Color.magenta);
 		this.add(center, BorderLayout.CENTER);
-		south = new ModificationsPanel();
+		south = new ModificationsPanel(); 
+		this.south.setBackground(Color.green);
 		this.add(south, BorderLayout.SOUTH);
 	}
 
@@ -107,7 +109,7 @@ public abstract class EpiTabDefinitions extends EpiTab {
 		public void setChanged() {
 			((ModificationsPanel) south).buttonEnable(true);
 		}
-
+ 
 		public boolean isChanged() {
 			return ((ModificationsPanel) south).accept.isEnabled();
 		}
@@ -117,7 +119,7 @@ public abstract class EpiTabDefinitions extends EpiTab {
 
 		if (!this.isInitialized) {
 			return;
-		}
+		} 
 		this.applyChange();
 		EpiGUI.getInstance().selectTabJTreePath(this.path);
 	}

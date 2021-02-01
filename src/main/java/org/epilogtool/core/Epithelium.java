@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -23,28 +24,28 @@ public class Epithelium {
 	private EpitheliumGrid grid;
 	private EpitheliumIntegrationFunctions integrationFunctions;
 	private EpitheliumPerturbations perturbations;
-	private EpitheliumUpdateSchemeIntra priorities;
+	private EpitheliumUpdateSchemeIntra updateSchemeIntra;
 	private EpitheliumUpdateSchemeInter updateSchemeInter;
-
+   
 	public Epithelium(int x, int y, String topologyID, String name, LogicalModel m, RollOver rollover,
 			EnumRandomSeed randomSeedType, int randomSeed)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, ClassNotFoundException {
 		this.name = name;
 		this.grid = new EpitheliumGrid(x, y, topologyID, rollover, m);
-		this.priorities = new EpitheliumUpdateSchemeIntra();
-		this.priorities.addModel(m);
+		this.updateSchemeIntra = new EpitheliumUpdateSchemeIntra();
+		this.updateSchemeIntra.addModelPriorities(m);
 		this.integrationFunctions = new EpitheliumIntegrationFunctions();
 		this.perturbations = new EpitheliumPerturbations();
 		this.updateSchemeInter = new EpitheliumUpdateSchemeInter(EpitheliumUpdateSchemeInter.DEFAULT_ALPHA,
 				UpdateCells.UPDATABLECELLS, randomSeedType, randomSeed);
-	}
+	} 
 
 	private Epithelium(String name, EpitheliumGrid grid, EpitheliumIntegrationFunctions eif,
 			EpitheliumUpdateSchemeIntra epc, EpitheliumPerturbations eap, EpitheliumUpdateSchemeInter usi) {
 		this.name = name;
 		this.grid = grid;
-		this.priorities = epc;
+		this.updateSchemeIntra = epc;
 		this.integrationFunctions = eif;
 		this.perturbations = eap;
 		this.updateSchemeInter = usi;
@@ -53,7 +54,7 @@ public class Epithelium {
 
 	public Epithelium clone() {
 		return new Epithelium("CopyOf_" + this.name, this.grid.clone(), this.integrationFunctions.clone(),
-				this.priorities.clone(), this.perturbations.clone(), this.updateSchemeInter.clone());
+				this.updateSchemeIntra.clone(), this.perturbations.clone(), this.updateSchemeInter.clone());
 	}
 
 	public String toString() {
@@ -62,7 +63,7 @@ public class Epithelium {
 
 	public boolean equals(Object o) {
 		Epithelium otherEpi = (Epithelium) o;
-		return (this.grid.equals(otherEpi.grid) && this.priorities.equals(otherEpi.priorities)
+		return (this.grid.equals(otherEpi.grid) && this.updateSchemeIntra.equals(otherEpi.updateSchemeIntra)
 				&& this.integrationFunctions.equals(otherEpi.integrationFunctions)
 				&& this.perturbations.equals(otherEpi.perturbations)
 				&& this.updateSchemeInter.equals(otherEpi.getUpdateSchemeInter()));
@@ -85,8 +86,8 @@ public class Epithelium {
 		// Add to Epithelium state new models from modelSet
 		for (LogicalModel mSet : modelSet) {
 			// Priority classes
-			if (this.priorities.getModelPriorityClasses(mSet) == null) {
-				this.priorities.addModel(mSet);
+			if (this.updateSchemeIntra.getModelPriorityClasses(mSet) == null) {
+				this.updateSchemeIntra.addModelPriorities(mSet);
 			}
 			// Perturbations
 //			if (!this.perturbations.hasModel(mSet))
@@ -94,9 +95,9 @@ public class Epithelium {
 		}
 
 		// Remove from Epithelium state absent models from modelSet
-		for (LogicalModel mPriorities : new ArrayList<LogicalModel>(this.priorities.getModelSet())) {
+		for (LogicalModel mPriorities : new ArrayList<LogicalModel>(this.updateSchemeIntra.getModelSet())) {
 			if (!modelSet.contains(mPriorities)) {
-				this.priorities.removeModel(mPriorities);
+				this.updateSchemeIntra.removeModel(mPriorities);
 			}
 		}
 //		for (LogicalModel mPerturbation : new ArrayList<LogicalModel>(this.perturbations.getModelSet())) {
@@ -141,8 +142,16 @@ public class Epithelium {
 		return this.updateSchemeInter;
 	}
 
+	public Boolean getActive(LogicalModel m) {
+		return this.updateSchemeIntra.getModelActive(m);
+	}
+
 	public ModelGrouping getPriorityClasses(LogicalModel m) {
-		return this.priorities.getModelPriorityClasses(m);
+		return this.updateSchemeIntra.getModelPriorityClasses(m);
+	}
+	
+	public Rates getRates(LogicalModel m) { 
+		return this.updateSchemeIntra.getModelRates(m);
 	}
 
 	public ComponentIntegrationFunctions getIntegrationFunctionsForComponent(NodeInfo node) {
@@ -196,17 +205,40 @@ public class Epithelium {
 
 	public void initPriorityClasses(LogicalModel m) {
 		ModelGrouping mpc = new ModelGrouping(m);
-		this.priorities.addModelPriorityClasses(mpc);
+		this.updateSchemeIntra.addModelPriorityClasses(mpc);
+	}
+	
+	public void initRates(LogicalModel m) {
+		this.updateSchemeIntra.addModelRates(m);
 	}
 
 	public void setPriorityClasses(LogicalModel m, String pcs) {
 		ModelGrouping mpc = new ModelGrouping(m, pcs);
-		this.priorities.addModelPriorityClasses(mpc);
+		this.updateSchemeIntra.addModelPriorityClasses(mpc);
 	}
 
 	public void setPriorityClasses(ModelGrouping mpc) {
-		this.priorities.addModelPriorityClasses(mpc);
+		this.updateSchemeIntra.addModelPriorityClasses(mpc);
 	}
+	
+	public void setRates(Rates rates) {
+		this.updateSchemeIntra.addModelRates(rates);
+	}
+	
+	public void setRates(LogicalModel m, String nodesRates) {
+		Rates rates = new Rates(m, nodesRates);
+		this.updateSchemeIntra.addModelRates(rates);
+	}
+	
+	public void setActive(LogicalModel m,  Boolean active) {
+		this.updateSchemeIntra.setActive(m, active);
+	}
+	
+	/*
+	 * public void setActiveSet(Map<LogicalModel, Boolean> activeSet) {
+	 * this.updateSchemeIntra.setActiveSet(activeSet); }
+	 */
+	
 
 	public void addPerturbation(LogicalModelPerturbation ap) {
 		this.perturbations.addPerturbation(ap);

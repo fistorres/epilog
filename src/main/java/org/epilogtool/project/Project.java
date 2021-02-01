@@ -40,7 +40,7 @@ public class Project {
 	}
 
 	public boolean hasChanged() {
-		return isChanged;
+		return isChanged; 
 	}
 
 	public void setChanged(boolean state) {
@@ -96,7 +96,7 @@ public class Project {
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, ClassNotFoundException {
 		Epithelium epi = new Epithelium(x, y, topologyID, userName, this.projectFeatures.getModel(modelName), rollover,
-				randomSeedType, randomSeed);
+				randomSeedType, randomSeed); 
 		this.epitheliumList.add(epi);
 		return epi;
 	}

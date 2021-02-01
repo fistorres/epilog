@@ -10,9 +10,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
@@ -30,6 +33,7 @@ import org.epilogtool.core.ComponentIntegrationFunctions;
 import org.epilogtool.core.EmptyModel;
 import org.epilogtool.core.Epithelium;
 import org.epilogtool.core.EpitheliumGrid;
+import org.epilogtool.core.Rates;
 import org.epilogtool.core.UpdateCells;
 import org.epilogtool.core.topology.RollOver;
 import org.epilogtool.gui.color.ColorUtils;
@@ -38,7 +42,7 @@ import org.epilogtool.project.Project;
 import org.epilogtool.project.ProjectFeatures;
 import org.epilogtool.services.TopologyService;
 
-public class Parser {
+public class Parser { 
 
 	public static void loadConfigurations(File fConfig) throws IOException, InstantiationException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
@@ -221,11 +225,51 @@ public class Parser {
 			}
 
 			// Model Priority classes
-			// PR #model node1,node2:...:nodei
+			// PR #model node1,node2:...:node
 			if (line.startsWith("PR")) {
 				saTmp = line.split("\\s+");
 				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
-				currEpi.setPriorityClasses(m, saTmp[2]);
+				
+				String[] classes = saTmp[2].split(":");
+				
+				// String classComponents = classes.split("$")[0];
+				
+				// get S, RN, RU or none  
+				Pattern p = Pattern.compile("\\$([A-Z]{1,2})");
+				// get rates [0.1,0.2,...]
+				Pattern p2 = Pattern.compile("\\$[A-Z]{2}(.*)");				
+							
+				for (String clas : classes) {
+					// get S, RN, RU or none  
+					Matcher match = p.matcher(clas);
+					if (match.find()) {
+						
+						// $S , synchronous 
+						if (match.group(1).equals("S")) {
+							currEpi.setPriorityClasses(m, saTmp[2]); 
+							currEpi.setActive(m, true);
+							
+						// $RU , Random Uniform
+						} else if (match.group(1).equals("RU")) {
+							currEpi.initRates(m);
+							currEpi.setActive(m, false);
+							
+						// $RN , Random not uniform	
+						} else if (match.group(1).equals("RN")) {
+							Matcher ratesMatcher = p2.matcher(clas);
+							if (ratesMatcher.find()) {
+								String rates = ratesMatcher.group(1);
+								currEpi.setRates(m, rates);
+								currEpi.setActive(m, false);
+							}
+						}
+					}
+					// Default, with no $ sign, synchronous
+					else {
+							currEpi.setPriorityClasses(m, saTmp[2]); 
+							currEpi.setActive(m, true);
+					}
+				}
 			}
 
 			// Model All Perturbations
@@ -449,18 +493,50 @@ public class Parser {
 		// PR #model node1,node2:...:nodei
 		for (LogicalModel m : model2Key.keySet()) {
 			if (epi.hasModel(m)) {
-				ModelGrouping mpc = epi.getPriorityClasses(m);
+				
+				ModelGrouping mpc =  null;				
+				Rates rates = epi.getRates(m);
+				Boolean active = epi.getActive(m);
+				
 				String sPCs = "";
-				for (int idxPC = 0; idxPC < mpc.size(); idxPC++) {
-					if (!sPCs.isEmpty())
-						sPCs += ":";
-					List<String> pcVars = mpc.getClassVars(idxPC).get(0);
-					sPCs += join(pcVars, ",");
+
+				// if PC are selected
+				if (active) {
+					mpc =  epi.getPriorityClasses(m);
+					for (int idxPC = 0; idxPC < mpc.size(); idxPC++) {
+						if (!sPCs.isEmpty())
+							sPCs += ":";
+						List<String> pcVars = mpc.getClassVars(idxPC).get(0);
+						sPCs += join(pcVars, ",");
 				}
+					
+				System.out.println(mpc.toString());
+				System.out.println(sPCs);
+					
+				// if Rates ise selected
+				} else {
+					// Init PC, so there is only one class.
+					epi.initPriorityClasses(m);
+					mpc =  epi.getPriorityClasses(m);
+					
+					Boolean uni = rates.isUniform();
+					if (uni) {
+						sPCs += "$RU";
+					}
+					else {
+						sPCs += "$RN";
+						sPCs += Arrays.toString(rates.getAllRates()).replaceAll("\\s+","");
+					}
+				}
+				
 				w.println("PR " + model2Key.get(m) + " " + sPCs);
+
+				
+				
 			}
+						
 			w.println();
-		}
+		} 
 
 		// Model All Perturbations
 		// old -> PT #model (Perturbation) R G B cell1-celli,celln,...

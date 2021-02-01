@@ -1,5 +1,6 @@
 package org.epilogtool.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.Image;
@@ -175,6 +176,7 @@ public class EpiGUI extends JFrame {
 
 		// TabbedPane
 		this.epiRightFrame = new JTabbedPane();
+		this.epiRightFrame.setBackground(Color.RED);
 		this.epiRightFrame.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -187,7 +189,7 @@ public class EpiGUI extends JFrame {
 					return;
 				epitab.notifyChange();
 			}
-		});
+		}); 
 
 		// Epithelium list
 		this.epiTreePanel = new EpiTreePanel(epiMenu, toolsMenu);
@@ -271,7 +273,7 @@ public class EpiGUI extends JFrame {
 			InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
 		DialogNewEpithelium dialogPanel = new DialogNewEpithelium(Project.getInstance().getModelNames(),
 				Project.getInstance().getEpitheliumNameList());
-
+ 
 		Window win = SwingUtilities.getWindowAncestor(this);
 		JDialog dialog = new JDialog(win, "New epithelium", ModalityType.APPLICATION_MODAL);
 		dialog.getContentPane().add(dialogPanel);
@@ -761,7 +763,7 @@ public class EpiGUI extends JFrame {
 	}
 
 	/**
-	 *
+	 * 
 	 */
 	public void replaceSBML() {
 		String model = this.projDescPanel.getSelected();
@@ -791,7 +793,7 @@ public class EpiGUI extends JFrame {
 					DialogMessage dialogMsg = new DialogMessage();
 					Project.getInstance().replaceModel(model, newModel, selectedEpiList, dialogMsg);
 					dialogMsg.show("Replace model");
-
+ 
 					JPanel jp = new JPanel();
 					if (!Project.getInstance().getProjectFeatures().getReplaceMessages().isEmpty()) {
 
@@ -855,7 +857,7 @@ public class EpiGUI extends JFrame {
 			} else if (tabName.equals(EpiTab.TAB_PERTURBATIONS)) {
 				epiTab = new EpiTabPerturbations(epi, selPath, tabChanged);
 			} else if (tabName.equals(EpiTab.TAB_PRIORITIES)) {
-				epiTab = new EpiTabCellularModelUpdate(epi, selPath, tabChanged);
+				epiTab = new EpiTabCellularModelUpdate(epi, selPath, tabChanged); 
 			} else if (tabName.equals(EpiTab.TAB_EPIUPDATING)) {
 				epiTab = new EpiTabEpitheliumModelUpdate(epi, selPath, tabChanged);
 			} else if (tabName.equals(EpiTab.TAB_MODELGRID)) {

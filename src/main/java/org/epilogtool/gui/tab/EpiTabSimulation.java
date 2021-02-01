@@ -657,7 +657,7 @@ public class EpiTabSimulation extends EpiTabTools {
 		if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 
 			// indicates whether the user still wants to save the picture
-			boolean doExport = true;
+			boolean doExport = true; 
 
 			// indicates whether to override an already existing file
 			boolean overrideExistingFile = false;

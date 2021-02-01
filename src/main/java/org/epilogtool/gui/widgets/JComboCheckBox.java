@@ -65,7 +65,7 @@ public class JComboCheckBox extends JComboWideBox<JCheckBox> {
 		List<JCheckBox> lCurrJCB = this.getCheckBoxes();
 		int sz = lCurrJCB.size();
 		// 1. adicionar no final
-		for (String sName : lItems) {
+		for (String sName : lItems) { 
 			boolean exists = false;
 			for (int i = 0; i < sz; i++) {
 				if (lCurrJCB.get(i).getText().equals(sName)) {
@@ -95,7 +95,7 @@ public class JComboCheckBox extends JComboWideBox<JCheckBox> {
 			if (jcb.isSelected()) {
 				lItemStrings.add(jcb.getText());
 			}
-		}
+		} 
 		return lItemStrings;
 	}
 

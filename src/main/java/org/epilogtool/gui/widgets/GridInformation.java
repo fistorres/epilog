@@ -170,7 +170,7 @@ public class GridInformation extends JPanel {
 						if (index < 0)
 							continue;
 						this.constraints(gbc, 1, y, 1);
-						jlTmp = new JLabel(": " + grid.getCellState(posX, posY)[index]);
+						jlTmp = new JLabel(": " + grid.getCellState(posX, posY)[index]); 
 						jlTmp.setToolTipText(nodeID);
 						this.jCellPanel.add(jlTmp, gbc);
 					}
