@@ -223,55 +223,45 @@ public class Parser {
 							"Integration function: " + nodeID + ":" + value + " has invalid expression: " + function);
 				}
 			}
-
+			
+			
 			// Model Priority classes
-			// PR #model node1,node2:...:node
+			// PR #model node1,node2:...:nodei
 			if (line.startsWith("PR")) {
 				saTmp = line.split("\\s+");
 				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
-				
-				String[] classes = saTmp[2].split(":");
-				
-				// String classComponents = classes.split("$")[0];
-				
-				// get S, RN, RU or none  
-				Pattern p = Pattern.compile("\\$([A-Z]{1,2})");
-				// get rates [0.1,0.2,...]
-				Pattern p2 = Pattern.compile("\\$[A-Z]{2}(.*)");				
-							
-				for (String clas : classes) {
-					// get S, RN, RU or none  
-					Matcher match = p.matcher(clas);
-					if (match.find()) {
-						
-						// $S , synchronous 
-						if (match.group(1).equals("S")) {
-							currEpi.setPriorityClasses(m, saTmp[2]); 
-							currEpi.setActive(m, true);
-							
-						// $RU , Random Uniform
-						} else if (match.group(1).equals("RU")) {
-							currEpi.initRates(m);
-							currEpi.setActive(m, false);
-							
-						// $RN , Random not uniform	
-						} else if (match.group(1).equals("RN")) {
-							Matcher ratesMatcher = p2.matcher(clas);
-							if (ratesMatcher.find()) {
-								String rates = ratesMatcher.group(1);
-								currEpi.setRates(m, rates);
-								currEpi.setActive(m, false);
-							}
-						}
-					}
-					// Default, with no $ sign, synchronous
-					else {
-							currEpi.setPriorityClasses(m, saTmp[2]); 
-							currEpi.setActive(m, true);
-					}
+				currEpi.setPriorityClasses(m, saTmp[2]);
 				}
-			}
 
+				/*
+				 * // Model Priority classes // PR #model node1,node2:...:node if
+				 * (line.startsWith("PR")) { saTmp = line.split("\\s+"); LogicalModel m =
+				 * Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
+				 * 
+				 * String[] classes = saTmp[2].split(":");
+				 * 
+				 * // String classComponents = classes.split("$")[0];
+				 * 
+				 * // get S, RN, RU or none Pattern p = Pattern.compile("\\$([A-Z]{1,2})"); //
+				 * get rates [0.1,0.2,...] Pattern p2 = Pattern.compile("\\$[A-Z]{2}(.*)");
+				 * 
+				 * for (String clas : classes) { // get S, RN, RU or none Matcher match =
+				 * p.matcher(clas); if (match.find()) {
+				 * 
+				 * // $S , synchronous if (match.group(1).equals("S")) {
+				 * currEpi.setPriorityClasses(m, saTmp[2]); currEpi.setActive(m, true);
+				 * 
+				 * // $RU , Random Uniform } else if (match.group(1).equals("RU")) {
+				 * currEpi.initRates(m); currEpi.setActive(m, false);
+				 * 
+				 * // $RN , Random not uniform } else if (match.group(1).equals("RN")) { Matcher
+				 * ratesMatcher = p2.matcher(clas); if (ratesMatcher.find()) { String rates =
+				 * ratesMatcher.group(1); currEpi.setRates(m, rates); currEpi.setActive(m,
+				 * false); } } } // Default, with no $ sign, synchronous else {
+				 * currEpi.setPriorityClasses(m, saTmp[2]); currEpi.setActive(m, true); } } }
+				 */
+			
+			
 			// Model All Perturbations
 			// Old version -> PT #model (Perturbation) R G B cell1-celli,celln,...
 			// Old NewVersion -> PT (Perturbation) R G B cell1-celli,celln,...
@@ -488,55 +478,49 @@ public class Parser {
 			}
 		}
 		w.println();
-
+		
 		// Model Priority classes
 		// PR #model node1,node2:...:nodei
 		for (LogicalModel m : model2Key.keySet()) {
 			if (epi.hasModel(m)) {
-				
-				ModelGrouping mpc =  null;				
-				Rates rates = epi.getRates(m);
-				Boolean active = epi.getActive(m);
-				
-				String sPCs = "";
-
-				// if PC are selected
-				if (active) {
-					mpc =  epi.getPriorityClasses(m);
-					for (int idxPC = 0; idxPC < mpc.size(); idxPC++) {
-						if (!sPCs.isEmpty())
-							sPCs += ":";
-						List<String> pcVars = mpc.getClassVars(idxPC).get(0);
-						sPCs += join(pcVars, ",");
-				}
-					
-				System.out.println(mpc.toString());
-				System.out.println(sPCs);
-					
-				// if Rates ise selected
-				} else {
-					// Init PC, so there is only one class.
-					epi.initPriorityClasses(m);
-					mpc =  epi.getPriorityClasses(m);
-					
-					Boolean uni = rates.isUniform();
-					if (uni) {
-						sPCs += "$RU";
-					}
-					else {
-						sPCs += "$RN";
-						sPCs += Arrays.toString(rates.getAllRates()).replaceAll("\\s+","");
-					}
-				}
-				
-				w.println("PR " + model2Key.get(m) + " " + sPCs);
-
-				
-				
+				ModelGrouping mpc = epi.getPriorityClasses(m);
+				w.println("PR " + model2Key.get(m) + " " + mpc.toString());
 			}
-						
 			w.println();
-		} 
+		}
+		
+
+		/*
+		 * // Model Priority classes // PR #model node1,node2:...:nodei for
+		 * (LogicalModel m : model2Key.keySet()) { if (epi.hasModel(m)) {
+		 * 
+		 * ModelGrouping mpc = null; Rates rates = epi.getRates(m); Boolean active =
+		 * epi.getActive(m);
+		 * 
+		 * String sPCs = "";
+		 * 
+		 * // if PC are selected if (active) { mpc = epi.getPriorityClasses(m); for (int
+		 * idxPC = 0; idxPC < mpc.size(); idxPC++) { if (!sPCs.isEmpty()) sPCs += ":";
+		 * List<String> pcVars = mpc.getClassVars(idxPC).get(0); sPCs += join(pcVars,
+		 * ","); }
+		 * 
+		 * System.out.println(mpc.toString()); System.out.println(sPCs);
+		 * 
+		 * // if Rates ise selected } else { // Init PC, so there is only one class.
+		 * epi.initPriorityClasses(m); mpc = epi.getPriorityClasses(m);
+		 * 
+		 * Boolean uni = rates.isUniform(); if (uni) { sPCs += "$RU"; } else { sPCs +=
+		 * "$RN"; sPCs += Arrays.toString(rates.getAllRates()).replaceAll("\\s+",""); }
+		 * }
+		 * 
+		 * w.println("PR " + model2Key.get(m) + " " + sPCs);
+		 * 
+		 * 
+		 * 
+		 * }
+		 * 
+		 * w.println(); }
+		 */ 
 
 		// Model All Perturbations
 		// old -> PT #model (Perturbation) R G B cell1-celli,celln,...
