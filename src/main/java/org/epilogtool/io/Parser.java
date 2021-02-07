@@ -10,12 +10,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
@@ -33,7 +30,6 @@ import org.epilogtool.core.ComponentIntegrationFunctions;
 import org.epilogtool.core.EmptyModel;
 import org.epilogtool.core.Epithelium;
 import org.epilogtool.core.EpitheliumGrid;
-import org.epilogtool.core.Rates;
 import org.epilogtool.core.UpdateCells;
 import org.epilogtool.core.topology.RollOver;
 import org.epilogtool.gui.color.ColorUtils;
@@ -75,10 +71,14 @@ public class Parser {
 
 				File fSBML = new File(fConfig.getParent() + File.separator + saTmp[2]);
 				try {
-					Project.getInstance().loadModel(fSBML.getName(), FileIO.loadSBMLModel(fSBML));
+					LogicalModel m = FileIO.loadSBMLModel(fSBML);
+					Project.getInstance().loadModel(fSBML.getName(), m);
+					System.out.println("New model from file: " + m + "\n");
 				} catch (Exception e) {
 					throw new IOException(Txt.get("s_SBML_failed_load"));
 				}
+				
+				System.out.println(saTmp[1] + saTmp[2]);
 				modelKey2Name.put(saTmp[1], saTmp[2]);
 				Color modelColor = ColorUtils.getColor(saTmp[3], saTmp[4], saTmp[5]);
 				Project.getInstance().getProjectFeatures().setModelColor(saTmp[2], modelColor);
@@ -146,7 +146,11 @@ public class Parser {
 			// Model grid
 			if (line.startsWith("GM")) {
 				saTmp = line.split("\\s+");
+				System.out.print("@Parser \n" + modelKey2Name.get(saTmp[1]) + "\n");
 				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
+				System.out.println(m);
+				
+				// está a entrar aqui....
 				if (currEpi == null) {
 					currEpi = Project.getInstance().newEpithelium(Integer.parseInt(x), Integer.parseInt(y),
 							topologyLayout, epiName, EmptyModel.getInstance().getName(), rollover, randomSeedType,
@@ -478,6 +482,8 @@ public class Parser {
 			}
 		}
 		w.println();
+
+		
 		
 		// Model Priority classes
 		// PR #model node1,node2:...:nodei

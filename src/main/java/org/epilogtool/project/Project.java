@@ -95,6 +95,8 @@ public class Project {
 			RollOver rollover, EnumRandomSeed randomSeedType, int randomSeed)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, ClassNotFoundException {
+		
+		System.out.println("@newEpi \n" + modelName + "\n" + this.projectFeatures.getModel(modelName) + "\n");
 		Epithelium epi = new Epithelium(x, y, topologyID, userName, this.projectFeatures.getModel(modelName), rollover,
 				randomSeedType, randomSeed); 
 		this.epitheliumList.add(epi);

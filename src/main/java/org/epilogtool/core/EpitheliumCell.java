@@ -90,6 +90,7 @@ public class EpitheliumCell {
 		long hash = 1;
 		for (int i = 0; i < model.getComponents().size(); i++) {
 			int vals = model.getComponents().get(i).getMax() + 1;
+			hash += i * Math.pow(vals, this.state[i]);
 		}
 		return hash;
 	}

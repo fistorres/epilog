@@ -89,8 +89,10 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 	private JComboBox<String> newModelCombobox(List<LogicalModel> modelList) {
 		// Model selection list
 		String[] saSBML = new String[modelList.size()];
-		for (int i = 0; i < modelList.size(); i++) {
+		for (int i = 0; i < modelList.size() ; i++) {
+			System.out.println("Model not recognized, same from epiGrid " + modelList.get(i));
 			saSBML[i] = Project.getInstance().getProjectFeatures().getModelName(modelList.get(i));
+			System.out.println("SBML: " + saSBML[i]);
 		}
 		JComboBox<String> jcb = new JComboWideBox<String>(saSBML);
 		jcb.addActionListener(new ActionListener() {
@@ -104,6 +106,7 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 		});
 		this.selModel = Project.getInstance().getProjectFeatures().getModel((String) jcb.getItemAt(0));
 		return jcb;
+		
 	}
 
 	private void updatePriorityPanel() {

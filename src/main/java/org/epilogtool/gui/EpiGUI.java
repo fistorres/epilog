@@ -634,6 +634,8 @@ public class EpiGUI extends JFrame {
 		fc.setFileFilter(xmlfilter);
 		fc.setDialogTitle("Open file");
 		if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			System.out.println("@loadSBML");
+			System.out.print(fc.getSelectedFile().getName() + "\n");
 			if (this.projDescPanel.hasModel(fc.getSelectedFile().getName())) {
 				JOptionPane.showMessageDialog(this,
 						"A model with the same name '" + fc.getSelectedFile().getName() + "' already exists!",
