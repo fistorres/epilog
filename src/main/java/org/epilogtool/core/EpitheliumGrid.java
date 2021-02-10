@@ -67,7 +67,6 @@ public class EpitheliumGrid {
 			}
 		}
 		this.modelSet = new HashSet<LogicalModel>();
-		System.out.println("@epiGrid \n" + m + "\n");
 		this.modelSet.add(m);
 		this.compCounts = new HashMap<String, Map<Byte, Integer>>();
 		this.compPercents = new HashMap<String, Map<Byte, Float>>();// ptgm
@@ -156,6 +155,7 @@ public class EpitheliumGrid {
 	public byte getCellComponentValue(int x, int y, String nodeID) {
 		return this.gridEpiCell[x][y].getNodeValue(nodeID);
 	}
+	
 
 	public Set<LogicalModel> getModelSet() {
 		return Collections.unmodifiableSet(this.modelSet);

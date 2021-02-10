@@ -54,6 +54,7 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 		// Model selection JPanel
 		this.jpNorthLeft = new JPanel(new FlowLayout());
 		List<LogicalModel> modelList = new ArrayList<LogicalModel>(this.epithelium.getEpitheliumGrid().getModelSet());
+	
 		JComboBox<String> jcbSBML = this.newModelCombobox(modelList);
 		this.jpNorthLeft.add(jcbSBML);
 		this.jpNorthLeft.setBorder(BorderFactory.createTitledBorder(Txt.get("s_MODEL_SELECT")));
@@ -90,9 +91,7 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 		// Model selection list
 		String[] saSBML = new String[modelList.size()];
 		for (int i = 0; i < modelList.size() ; i++) {
-			System.out.println("Model not recognized, same from epiGrid " + modelList.get(i));
 			saSBML[i] = Project.getInstance().getProjectFeatures().getModelName(modelList.get(i));
-			System.out.println("SBML: " + saSBML[i]);
 		}
 		JComboBox<String> jcb = new JComboWideBox<String>(saSBML);
 		jcb.addActionListener(new ActionListener() {
@@ -137,8 +136,10 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 	@Override
 	protected void buttonAccept() {
 		for (LogicalModel m : this.userPriorityClasses.getModelSet()) {
+			this.userPriorityClasses.accept(m);
 			ModelGrouping clone = this.userPriorityClasses.getModelPriorityClasses(m).clone();
 			this.epithelium.setPriorityClasses(clone);
+			this.updatePriorityPanel();
 		}
 	}
 

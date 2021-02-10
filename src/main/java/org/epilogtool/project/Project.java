@@ -96,7 +96,6 @@ public class Project {
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, ClassNotFoundException {
 		
-		System.out.println("@newEpi \n" + modelName + "\n" + this.projectFeatures.getModel(modelName) + "\n");
 		Epithelium epi = new Epithelium(x, y, topologyID, userName, this.projectFeatures.getModel(modelName), rollover,
 				randomSeedType, randomSeed); 
 		this.epitheliumList.add(epi);
@@ -131,6 +130,12 @@ public class Project {
 		return this.projectFeatures.getModelNames();
 	}
 
+	
+	public Set<LogicalModel> getModels() {
+		return this.projectFeatures.getModels();
+	}
+
+	
 	public LogicalModel getModel(String name) {
 		return this.projectFeatures.getModel(name);
 	}

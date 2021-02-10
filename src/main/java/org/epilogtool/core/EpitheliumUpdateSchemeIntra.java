@@ -30,10 +30,16 @@ public class EpitheliumUpdateSchemeIntra {
 
 	public void addModelPriorityClasses(ModelGrouping mpc) {
 		this.priorityClassSet.put(mpc.getModel(), mpc);
+		this.accept(mpc.getModel());
+
 	}
 
 	public Set<LogicalModel> getModelSet() {
 		return this.priorityClassSet.keySet();
+	}
+	
+	public void accept(LogicalModel m) {
+		this.priorityClassSet.get(m).accept();
 	}
 
 	public EpitheliumUpdateSchemeIntra clone() {

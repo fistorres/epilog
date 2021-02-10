@@ -46,9 +46,6 @@ public class ProjectFeatures {
 
 	public void addModel(String name, LogicalModel m) {
 		this.string2Model.put(name, m);
-		System.out.println("@addModel");
-		System.out.println("Name: "+ name);
-		System.out.println("Model: " + m + "\n");
 		this.model2String.put(m, name);
 		this.modelColor.put(m, ColorUtils.random());
 		this.addModelComponents(m);
@@ -99,7 +96,6 @@ public class ProjectFeatures {
 	}
 
 	public LogicalModel getModel(String name) {
-		System.out.print("@getmodel \n " + name + "\n\n");
 		if (EmptyModel.getInstance().isEmptyModel(name)) {
 			return EmptyModel.getInstance().getModel();
 		}

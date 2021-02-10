@@ -73,12 +73,10 @@ public class Parser {
 				try {
 					LogicalModel m = FileIO.loadSBMLModel(fSBML);
 					Project.getInstance().loadModel(fSBML.getName(), m);
-					System.out.println("New model from file: " + m + "\n");
 				} catch (Exception e) {
 					throw new IOException(Txt.get("s_SBML_failed_load"));
 				}
 				
-				System.out.println(saTmp[1] + saTmp[2]);
 				modelKey2Name.put(saTmp[1], saTmp[2]);
 				Color modelColor = ColorUtils.getColor(saTmp[3], saTmp[4], saTmp[5]);
 				Project.getInstance().getProjectFeatures().setModelColor(saTmp[2], modelColor);
@@ -146,9 +144,7 @@ public class Parser {
 			// Model grid
 			if (line.startsWith("GM")) {
 				saTmp = line.split("\\s+");
-				System.out.print("@Parser \n" + modelKey2Name.get(saTmp[1]) + "\n");
 				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
-				System.out.println(m);
 				
 				// está a entrar aqui....
 				if (currEpi == null) {
@@ -234,6 +230,7 @@ public class Parser {
 			if (line.startsWith("PR")) {
 				saTmp = line.split("\\s+");
 				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
+				System.out.println(saTmp[2]);
 				currEpi.setPriorityClasses(m, saTmp[2]);
 				}
 
@@ -299,6 +296,8 @@ public class Parser {
 		}
 		Project.getInstance().setChanged(false);
 		NotificationManager.dispatchDialogWarning(true, false);
+		
+	
 	}
 
 	private static LogicalModelPerturbation string2LogicalModelPerturbation(ProjectFeatures features, String sExpr) {

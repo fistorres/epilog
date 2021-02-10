@@ -115,7 +115,10 @@ public class EpiTabPerturbations extends EpiTabDefinitions {
 
 		// Model selection Panel
 		this.lTop = new JPanel(new FlowLayout());
-		List<LogicalModel> modelList = new ArrayList<LogicalModel>(this.epithelium.getEpitheliumGrid().getModelSet());
+	//	List<LogicalModel> modelList = new ArrayList<LogicalModel>(this.epithelium.getEpitheliumGrid().getModelSet());
+		List<LogicalModel> modelList = new ArrayList<LogicalModel>();
+		modelList.addAll(Project.getInstance().getModels());
+
 		JComboBox<String> jcbSBML = this.newModelCombobox(modelList);
 		this.lTop.add(jcbSBML);
 		this.lTop.setBorder(BorderFactory.createTitledBorder(Txt.get("s_MODEL_SELECT")));
