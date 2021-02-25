@@ -176,7 +176,6 @@ public class EpiGUI extends JFrame {
 
 		// TabbedPane
 		this.epiRightFrame = new JTabbedPane();
-		this.epiRightFrame.setBackground(Color.RED);
 		this.epiRightFrame.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {

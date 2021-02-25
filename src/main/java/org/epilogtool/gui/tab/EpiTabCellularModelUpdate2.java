@@ -156,12 +156,8 @@ public class EpiTabCellularModelUpdate2 extends EpiTabDefinitions implements Hyp
 		this.jpNRTop.add(this.jrPC);
 		this.jpNRTop.add(this.jrRates);
 
-		this.jpNRTop.setBackground(Color.cyan);
 
-		//		
-		this.jpNorth.setBackground(Color.BLUE);
-		this.jpNorthLeft.setBackground(Color.yellow);
-		
+		//				
 
 		this.tpc = new TabProbablyChanged();
 		this.mModel2PCP = new HashMap<LogicalModel, PriorityClassPanel>();

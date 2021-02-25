@@ -27,10 +27,7 @@ import org.epilogtool.core.topology.Topology;
 public class TopologyService {
 
 	public static final String FILTER_DOT = "org.epilogtool.core.topology.Topology";
-	
-	
-	/// CHANGED HERE !
-	public static final String FILTER_SLH = "org\\epilogtool\\core\\topology\\Topology";
+	public static final String FILTER_SLH = "org/epilogtool/core/topology/Topology";
 	private final String CLASS = ".class";
 	private final static String SEP = "/";
 
@@ -73,23 +70,18 @@ public class TopologyService {
 					}
 				}
 				jarf.close();
-			} else { // it's just a directory with all .class files 
-				
-				// CHANGED HERE 2  
-				basedir = basedir.replace("/", "\\");
+			} else { // it's just a directory with all .class files
 				basedir = basedir.substring(basedir.indexOf(File.separator), basedir.lastIndexOf(File.separator));
 				File fdir = new File(basedir);
 				for (File file : fdir.listFiles()) {
 					String name = file.toString();
-
 					if (name.contains(FILTER_SLH)) {
 						String className = FILTER_DOT + name.substring(name.indexOf(FILTER_SLH) + FILTER_SLH.length(),
 								name.length() - this.CLASS.length());
-
 						this.addTopology(cLoader, className);
 					}
 				}
-			} 
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

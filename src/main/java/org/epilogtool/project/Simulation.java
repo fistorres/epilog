@@ -15,6 +15,7 @@ import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
 import org.colomoto.biolqm.tool.simulation.multiplesuccessor.PriorityUpdater;
+import org.colomoto.biolqm.tool.simulation.random.RandomUpdaterWrapper;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.RandCentral;
 import org.epilogtool.common.Tuple2D;
@@ -212,8 +213,8 @@ public class Simulation {
 		if (succ == null || succ.size() == 0) {
 			return currState;
 		} else if (succ.size() > 1) {
-			// FIXME
-			// throw new Exception("Argh");
+			Random random = new Random();
+			return succ.get(random.nextInt(succ.size()));
 		}
 		return succ.get(0);
 	}

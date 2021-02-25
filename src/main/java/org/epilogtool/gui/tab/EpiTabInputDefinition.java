@@ -98,11 +98,9 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 		this.center.add(jpNorth, BorderLayout.NORTH);
 		//
 		this.jpNRTop = new JPanel(new FlowLayout());
-		this.jpNRTop.setBackground(Color.cyan);
 
 		jpNRight.add(this.jpNRTop, BorderLayout.NORTH);
 		this.jpNRBottom = new JPanel(new GridBagLayout()); 
-		this.jpNRBottom.setBackground(Color.pink);
 		jpNRight.add(this.jpNRBottom, BorderLayout.CENTER);
 		//
 		jpNorth.add(jpNLeft, BorderLayout.LINE_START);

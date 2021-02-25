@@ -37,10 +37,8 @@ public abstract class EpiTabDefinitions extends EpiTab {
 	private void initializeGUI() {
 		this.setLayout(new BorderLayout());
 		center = new JPanel();
-		this.center.setBackground(Color.magenta);
 		this.add(center, BorderLayout.CENTER);
 		south = new ModificationsPanel(); 
-		this.south.setBackground(Color.green);
 		this.add(south, BorderLayout.SOUTH);
 	}
 

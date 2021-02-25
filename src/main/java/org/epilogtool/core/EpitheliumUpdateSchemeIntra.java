@@ -39,7 +39,7 @@ public class EpitheliumUpdateSchemeIntra {
 	}
 	
 	public void accept(LogicalModel m) {
-		this.priorityClassSet.get(m).accept();
+		this.priorityClassSet.get(m).acceptGUI();
 	}
 
 	public EpitheliumUpdateSchemeIntra clone() {
