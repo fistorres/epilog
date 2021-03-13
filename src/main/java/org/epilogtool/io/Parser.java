@@ -21,6 +21,12 @@ import org.colomoto.biolqm.modifier.perturbation.FixedValuePerturbation;
 import org.colomoto.biolqm.modifier.perturbation.MultiplePerturbation;
 import org.colomoto.biolqm.modifier.perturbation.RangePerturbation;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
+import org.colomoto.biolqm.tool.simulation.grouping.SplittingType;
+import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.RankedClass;
+import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.RankedClassGroup;
+import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.VarInfo;
+import org.colomoto.biolqm.tool.simulation.LogicalModelUpdater;
+import org.colomoto.biolqm.tool.simulation.UpdaterFactory2;
 import org.epilogtool.OptionStore;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.RandCentral;
@@ -39,6 +45,18 @@ import org.epilogtool.project.ProjectFeatures;
 import org.epilogtool.services.TopologyService;
 
 public class Parser { 
+	
+	public static final String SEPVAR = ",";
+	public static final String SEPGROUP = "/";
+	public static final String SEPCLASS = ":";
+	public static final String SEPUPDATER = "\\$";
+	public static Map<String, String> updatersEpiBioLQM;
+	static {
+		updatersEpiBioLQM = new HashMap<>();
+		updatersEpiBioLQM.put("RN", "Random non uniform");
+		updatersEpiBioLQM.put("RU", "Random uniform");
+		updatersEpiBioLQM.put("S", "Synchronous");
+	}
 
 	public static void loadConfigurations(File fConfig) throws IOException, InstantiationException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
@@ -230,39 +248,86 @@ public class Parser {
 			if (line.startsWith("PR")) {
 				saTmp = line.split("\\s+");
 				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
+				
 				System.out.println(saTmp[2]);
-				currEpi.setPriorityClasses(m, saTmp[2]);
+				Map<Integer, Map<List<VarInfo>, LogicalModelUpdater>> pcList = 
+						new HashMap<Integer, Map<List<VarInfo>, LogicalModelUpdater>>();
+
+//				Map<Integer, Map<List<VarInfo>, LogicalModelUpdater>> ranks
+
+				
+				String[] ranks = saTmp[2].split(SEPCLASS);
+				int rankCount = 0;
+				for (String rank : ranks) {
+					
+					Map<List<VarInfo>, LogicalModelUpdater> newGroups 
+					= new HashMap<List<VarInfo>, LogicalModelUpdater>();
+					
+					for(String group : rank.split(SEPGROUP)) {
+ 						String[] groupTemp = group.split(SEPUPDATER);
+						
+						LogicalModelUpdater up = null;
+						
+						String[] vars =  null;
+						if (groupTemp.length == 1) {
+							up = UpdaterFactory2.getUpdater(m,"Synchronous");
+							vars =  groupTemp[0].split(SEPVAR);
+
+						} else if (groupTemp.length == 2) {
+						
+							String updater = groupTemp[1];
+							if (groupTemp[1].length() > 2) {
+								String[] rates = updater.substring(3, updater.length() - 1).split(",");
+								updater = updater.substring(0,2);
+								double[] doubleRates = new double[rates.length];
+								for (int e = 0; e < doubleRates.length; e++) {
+									doubleRates[e] = Double.parseDouble(rates[e]);
+								}
+							
+								up = UpdaterFactory2.getUpdater(m, updatersEpiBioLQM.get(updater),
+										doubleRates);
+								vars =  groupTemp[0].split(SEPVAR);
+
+							} else {
+								up = UpdaterFactory2.getUpdater(m, updatersEpiBioLQM.get(updater));
+								vars =  groupTemp[0].split(SEPVAR);
+							}
+						}
+				
+						List<VarInfo> newVars = new ArrayList<VarInfo>();
+						for (String var : vars) {
+							int split = 0;
+							if (var.endsWith(SplittingType.NEGATIVE.toString())) {
+								split = -1;
+								var = var.substring(0, var.length() - SplittingType.NEGATIVE.toString().length());
+							} else if (var.endsWith(SplittingType.POSITIVE.toString())) {
+								split = 1;
+								var = var.substring(0, var.length() - SplittingType.POSITIVE.toString().length());
+							}
+							for (int idx = 0; idx < m.getComponents().size(); idx++) {
+								NodeInfo node = m.getComponents().get(idx);
+								// find Node with var nodeID
+								if (node.getNodeID().equals(var)) {
+									VarInfo newVar = new VarInfo (idx, split, m);
+									newVars.add(newVar);
+								}
+							}
+						}
+						newGroups.put(newVars, up);
+					}
+					pcList.put(rankCount, newGroups);
+					rankCount ++;
 				}
 
-				/*
-				 * // Model Priority classes // PR #model node1,node2:...:node if
-				 * (line.startsWith("PR")) { saTmp = line.split("\\s+"); LogicalModel m =
-				 * Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
-				 * 
-				 * String[] classes = saTmp[2].split(":");
-				 * 
-				 * // String classComponents = classes.split("$")[0];
-				 * 
-				 * // get S, RN, RU or none Pattern p = Pattern.compile("\\$([A-Z]{1,2})"); //
-				 * get rates [0.1,0.2,...] Pattern p2 = Pattern.compile("\\$[A-Z]{2}(.*)");
-				 * 
-				 * for (String clas : classes) { // get S, RN, RU or none Matcher match =
-				 * p.matcher(clas); if (match.find()) {
-				 * 
-				 * // $S , synchronous if (match.group(1).equals("S")) {
-				 * currEpi.setPriorityClasses(m, saTmp[2]); currEpi.setActive(m, true);
-				 * 
-				 * // $RU , Random Uniform } else if (match.group(1).equals("RU")) {
-				 * currEpi.initRates(m); currEpi.setActive(m, false);
-				 * 
-				 * // $RN , Random not uniform } else if (match.group(1).equals("RN")) { Matcher
-				 * ratesMatcher = p2.matcher(clas); if (ratesMatcher.find()) { String rates =
-				 * ratesMatcher.group(1); currEpi.setRates(m, rates); currEpi.setActive(m,
-				 * false); } } } // Default, with no $ sign, synchronous else {
-				 * currEpi.setPriorityClasses(m, saTmp[2]); currEpi.setActive(m, true); } } }
-				 */
-			
-			
+				ModelGrouping mpc = null;
+				try {
+					mpc = new ModelGrouping(m, pcList);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				currEpi.setPriorityClasses(mpc);
+			}
+
 			// Model All Perturbations
 			// Old version -> PT #model (Perturbation) R G B cell1-celli,celln,...
 			// Old NewVersion -> PT (Perturbation) R G B cell1-celli,celln,...
@@ -297,7 +362,6 @@ public class Parser {
 		Project.getInstance().setChanged(false);
 		NotificationManager.dispatchDialogWarning(true, false);
 		
-	
 	}
 
 	private static LogicalModelPerturbation string2LogicalModelPerturbation(ProjectFeatures features, String sExpr) {
