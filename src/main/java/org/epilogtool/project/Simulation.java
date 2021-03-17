@@ -97,7 +97,12 @@ public class Simulation {
 					// Get Priority classes
 					ModelGrouping mpc = this.epithelium.getPriorityClasses(m);
 					// FIXME PriorityUpdater does not receive the "modified" model anymore
-					mpc = mpc.cloneWithModel(perturb);
+					try {
+						mpc = mpc.cloneWithModel(perturb);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					PriorityUpdater updater = new PriorityUpdater(mpc);
 					this.updaterCache.get(m).put(ap, updater);
 				}
@@ -266,7 +271,8 @@ public class Simulation {
 				for (NodeInfo node : model.getComponents()) {
 					for (byte i = 1; i <= node.getMax(); i++) {
 						String nodeID = node.getNodeID() + " " + i;
-						percentageHistory.get(index).put(nodeID, grid.getPercentage(node.getNodeID(), i));
+						percentageHistory.get(index).put(nodeID, grid.
+								getPercentage(node.getNodeID(), i));
 					}
 				}
 			}

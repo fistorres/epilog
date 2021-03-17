@@ -96,3 +96,18 @@ class CloneEpiAction extends AbstractAction {
 		EpiGUI.getInstance().cloneEpithelium();
 	}
 }
+
+
+class EditAsTextEpiAction extends AbstractAction {
+	private static final long serialVersionUID = 1728730440633848251L;
+
+	public EditAsTextEpiAction() {
+		super(Txt.get("s_MENU_EPI_TEXTVIEW"));
+		putValue(SHORT_DESCRIPTION, Txt.get("s_MENU_EPI_TEXTVIEW"));
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		EpiGUI.getInstance().cloneEpithelium();
+	}
+}

@@ -633,15 +633,12 @@ public class EpiGUI extends JFrame {
 		fc.setFileFilter(xmlfilter);
 		fc.setDialogTitle("Open file");
 		if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-			System.out.println("@loadSBML");
-			System.out.print(fc.getSelectedFile().getName() + "\n");
 			if (this.projDescPanel.hasModel(fc.getSelectedFile().getName())) {
 				JOptionPane.showMessageDialog(this,
 						"A model with the same name '" + fc.getSelectedFile().getName() + "' already exists!",
 						"Warning", JOptionPane.WARNING_MESSAGE);
 				return;
-
-			}
+			}	
 
 			LogicalModel newModel = FileIO.loadSBMLModel(fc.getSelectedFile());
 			for (NodeInfo node : newModel.getComponents()) {

@@ -12,8 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
+import java.util.Map; 
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
@@ -22,11 +21,9 @@ import org.colomoto.biolqm.modifier.perturbation.MultiplePerturbation;
 import org.colomoto.biolqm.modifier.perturbation.RangePerturbation;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
 import org.colomoto.biolqm.tool.simulation.grouping.SplittingType;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.RankedClass;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.RankedClassGroup;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.VarInfo;
+import org.colomoto.biolqm.widgets.UpdaterFactoryModelGrouping;
 import org.colomoto.biolqm.tool.simulation.LogicalModelUpdater;
-import org.colomoto.biolqm.tool.simulation.UpdaterFactory2;
 import org.epilogtool.OptionStore;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.RandCentral;
@@ -249,7 +246,6 @@ public class Parser {
 				saTmp = line.split("\\s+");
 				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
 				
-				System.out.println(saTmp[2]);
 				Map<Integer, Map<List<VarInfo>, LogicalModelUpdater>> pcList = 
 						new HashMap<Integer, Map<List<VarInfo>, LogicalModelUpdater>>();
 
@@ -270,7 +266,7 @@ public class Parser {
 						
 						String[] vars =  null;
 						if (groupTemp.length == 1) {
-							up = UpdaterFactory2.getUpdater(m,"Synchronous");
+							up = UpdaterFactoryModelGrouping.getUpdater(m,"Synchronous");
 							vars =  groupTemp[0].split(SEPVAR);
 
 						} else if (groupTemp.length == 2) {
@@ -284,12 +280,12 @@ public class Parser {
 									doubleRates[e] = Double.parseDouble(rates[e]);
 								}
 							
-								up = UpdaterFactory2.getUpdater(m, updatersEpiBioLQM.get(updater),
+								up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater),
 										doubleRates);
 								vars =  groupTemp[0].split(SEPVAR);
 
 							} else {
-								up = UpdaterFactory2.getUpdater(m, updatersEpiBioLQM.get(updater));
+								up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater));
 								vars =  groupTemp[0].split(SEPVAR);
 							}
 						}
@@ -364,7 +360,8 @@ public class Parser {
 		
 	}
 
-	private static LogicalModelPerturbation string2LogicalModelPerturbation(ProjectFeatures features, String sExpr) {
+	private static LogicalModelPerturbation string2LogicalModelPerturbation(ProjectFeatures features,
+			String sExpr) {
 		String[] saExpr = sExpr.split(", ");
 		List<LogicalModelPerturbation> lPerturb = new ArrayList<LogicalModelPerturbation>();
 

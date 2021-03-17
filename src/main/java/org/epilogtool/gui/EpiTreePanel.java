@@ -1,6 +1,7 @@
 package org.epilogtool.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -8,6 +9,7 @@ import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -21,6 +23,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
+import org.epilogtool.gui.menu.ByTextEpiTreeMenu;
 import org.epilogtool.gui.menu.EpiTreePopupMenu;
 import org.epilogtool.gui.tab.EpiTab;
 import org.epilogtool.project.Project;
@@ -33,15 +36,18 @@ public class EpiTreePanel extends JPanel {
 	private JMenu toolsMenu;
 	private JTree epiTree;
 	private EpiTreePopupMenu popupmenu;
+	private ByTextEpiTreeMenu popupText;
 
 	public EpiTreePanel(JMenu epiMenu, JMenu toolsMenu) {
 		this.epiMenu = epiMenu;
 		this.toolsMenu = toolsMenu;
 		this.epiTree = null;
 		this.popupmenu = new EpiTreePopupMenu();
-
+		this.popupText = new ByTextEpiTreeMenu();
+	
 		this.setLayout(new BorderLayout());
-		this.add(EpiLogGUIFactory.getJLabelBold(Txt.get("s_EPITREE_PANEL_TITLE")), BorderLayout.PAGE_START);
+		this.add(EpiLogGUIFactory.getJLabelBold(Txt.get("s_EPITREE_PANEL_TITLE")), 
+				BorderLayout.PAGE_START);
 		this.scrollTree = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		this.add(this.scrollTree, BorderLayout.CENTER);
@@ -58,6 +64,8 @@ public class EpiTreePanel extends JPanel {
 
 		this.epiTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		this.scrollTree.setViewportView(this.epiTree);
+		
+		
 		this.epiTree.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -65,14 +73,28 @@ public class EpiTreePanel extends JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e)) {
+                    int closestRow = epiTree.getClosestRowForLocation(e.getX(), e.getY());                          
+                    Rectangle closestRowBounds = epiTree.getRowBounds(closestRow);
+                    
+                    if(e.getY() >= closestRowBounds.getY() && 
+                            e.getY() < closestRowBounds.getY() + 
+                            closestRowBounds.getHeight()) {
+                    	
+                    		if(e.getX() > closestRowBounds.getX() && 
+                                closestRow < epiTree.getRowCount()){
+                        	epiTree.setSelectionRow(closestRow);                                              }
+                    } else
+                    	epiTree.setSelectionRow(-1);
+                }
+				  
 				if (e.getClickCount() == 2) {
 					checkDoubleClickEpitheliumJTree(e);
-				} else if (e.isPopupTrigger()) {
-					// popupmenu.updateMenuItems(listSBMLs.getSelectedValue() !=
-					// null);
-					popupmenu.show(e.getComponent(), e.getX(), e.getY());
+				} else if(e.isPopupTrigger()) {
+					openPopUps(e);
 				}
-			}
+					    
+			};
 
 			@Override
 			public void mouseExited(MouseEvent e) {
@@ -123,7 +145,7 @@ public class EpiTreePanel extends JPanel {
 		}
 		return path;
 	}
-
+	
 	public Epithelium getSelectedEpithelium() {
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.epiTree.getLastSelectedPathComponent();
 		if (node == null)
@@ -212,11 +234,11 @@ public class EpiTreePanel extends JPanel {
 	}
 
 	private void checkDoubleClickEpitheliumJTree(MouseEvent e) {
-		int selRow = this.epiTree.getRowForLocation(e.getX(), e.getY());
+		int selRow = this.epiTree.getClosestRowForLocation(e.getX(), e.getY());
 		if (selRow == -1)
 			return;
 
-		TreePath selPath = this.epiTree.getPathForLocation(e.getX(), e.getY());
+		TreePath selPath = this.epiTree.getClosestPathForLocation(e.getX(), e.getY());
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
 		// Only opens tabs for leafs
 		if (!node.isLeaf()) {
@@ -225,7 +247,39 @@ public class EpiTreePanel extends JPanel {
 		DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
 
 		if (parent != null) {
-			EpiGUI.getInstance().openEpiTab((Epithelium) parent.getUserObject(), selPath, node.toString());
+			EpiGUI.getInstance().openEpiTab((Epithelium) parent.getUserObject(),
+					selPath, node.toString());
 		}
 	}
+	
+	private void openPopUps(MouseEvent e) {
+			// popupmenu.updateMenuItems(listSBMLs.getSelectedValue() !=
+			// null);
+		    int closestRow = epiTree.getClosestRowForLocation(e.getX(), e.getY());                          
+            Rectangle closestRowBounds = epiTree.getRowBounds(closestRow);
+            
+		
+			
+			if(e.getY() >= closestRowBounds.getY() && 
+                    e.getY() < closestRowBounds.getY() + 
+                    closestRowBounds.getHeight()) {
+            	
+            		if(e.getX() > closestRowBounds.getX() && 
+                        closestRow < epiTree.getRowCount()){
+                	epiTree.setSelectionRow(closestRow);                                              }
+            } else {
+            	epiTree.setSelectionRow(-1);
+				return;
+			}									
+			// Only opens tabs for leafs
+			TreePath selPath = epiTree.getClosestPathForLocation(e.getX(), e.getY());
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+			
+			if (node.isLeaf()) {
+				popupText.show(e.getComponent(), e.getX(), e.getY());
+			} else {
+				popupmenu.show(e.getComponent(), e.getX(), e.getY());
+			}				
+	}
+
 }
