@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -136,7 +137,8 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 
 	@Override
 	protected void buttonAccept() {
-		for (LogicalModel m : this.userPriorityClasses.getModelSet()) {
+		Set<LogicalModel> models = this.userPriorityClasses.getModelSet();
+		for (LogicalModel m : models) {
 			this.userPriorityClasses.accept(m);
 			ModelGrouping clone = this.userPriorityClasses.getModelPriorityClasses(m).clone();
 			this.epithelium.setPriorityClasses(clone);

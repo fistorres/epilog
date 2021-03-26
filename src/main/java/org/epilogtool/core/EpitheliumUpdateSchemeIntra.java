@@ -66,5 +66,11 @@ public class EpitheliumUpdateSchemeIntra {
 		}
 		return true;
 	}
+
+//	@Override
+//	public Map<LogicalModel, ModelGrouping> parse() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 	
 }

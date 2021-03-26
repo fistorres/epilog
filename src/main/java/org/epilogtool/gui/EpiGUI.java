@@ -31,6 +31,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.colomoto.biolqm.LogicalModel;
@@ -267,6 +268,7 @@ public class EpiGUI extends JFrame {
 	public void userMessageError(String msg, String title) {
 		this.userMessage(msg, title, JOptionPane.ERROR_MESSAGE);
 	}
+	
 
 	public void newEpithelium() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
@@ -318,6 +320,7 @@ public class EpiGUI extends JFrame {
 			this.validateGUI();
 		}
 	}
+	
 
 	public void editEpithelium() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
@@ -384,6 +387,8 @@ public class EpiGUI extends JFrame {
 		this.cleanGUI();
 		this.validateGUI();
 	}
+	
+	
 
 	public String getVersion() {
 		return this.version;
@@ -839,6 +844,22 @@ public class EpiGUI extends JFrame {
 			}
 		}
 		return tabIndex;
+	}
+	
+	public void openEditByTextDialog() {
+		// get the epithelium
+		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
+		DefaultMutableTreeNode node = this.epiTreePanel.getSelectedNode();
+		
+		DialogEditByText editDialog = new DialogEditByText(epi, node.toString());
+		
+		Window win = SwingUtilities.getWindowAncestor(this);
+		JDialog dialog = new JDialog(win, "View \"" + node.toString() + "\" as text", ModalityType.APPLICATION_MODAL);
+		dialog.getContentPane().add(editDialog);
+		dialog.pack();
+		dialog.setLocationRelativeTo(null);
+		dialog.setVisible(true);
+
 	}
 
 	public void openEpiTab(Epithelium epi, TreePath selPath, String tabName) {

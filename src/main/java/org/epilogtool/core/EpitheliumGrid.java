@@ -298,9 +298,7 @@ public class EpitheliumGrid {
 		if (a == null || !(a instanceof EpitheliumGrid)) {
 			return false;
 		}
-		if (a.equals(this)){
-			return true;
-		}
+
 		EpitheliumGrid o = (EpitheliumGrid) a;
 		if (!this.topology.equals(o.topology)) {
 			return false;

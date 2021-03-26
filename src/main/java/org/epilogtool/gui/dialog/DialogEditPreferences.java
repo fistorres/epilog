@@ -1,3 +1,4 @@
+
 package org.epilogtool.gui.dialog;
 
 import java.awt.BorderLayout;

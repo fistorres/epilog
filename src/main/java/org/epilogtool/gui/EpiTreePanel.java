@@ -23,7 +23,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
-import org.epilogtool.gui.menu.ByTextEpiTreeMenu;
+import org.epilogtool.gui.menu.ByTextEpiTreePopupMenu;
 import org.epilogtool.gui.menu.EpiTreePopupMenu;
 import org.epilogtool.gui.tab.EpiTab;
 import org.epilogtool.project.Project;
@@ -36,14 +36,14 @@ public class EpiTreePanel extends JPanel {
 	private JMenu toolsMenu;
 	private JTree epiTree;
 	private EpiTreePopupMenu popupmenu;
-	private ByTextEpiTreeMenu popupText;
+	private ByTextEpiTreePopupMenu popupText;
 
 	public EpiTreePanel(JMenu epiMenu, JMenu toolsMenu) {
 		this.epiMenu = epiMenu;
 		this.toolsMenu = toolsMenu;
 		this.epiTree = null;
 		this.popupmenu = new EpiTreePopupMenu();
-		this.popupText = new ByTextEpiTreeMenu();
+		this.popupText = new ByTextEpiTreePopupMenu();
 	
 		this.setLayout(new BorderLayout());
 		this.add(EpiLogGUIFactory.getJLabelBold(Txt.get("s_EPITREE_PANEL_TITLE")), 
@@ -73,20 +73,7 @@ public class EpiTreePanel extends JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e)) {
-                    int closestRow = epiTree.getClosestRowForLocation(e.getX(), e.getY());                          
-                    Rectangle closestRowBounds = epiTree.getRowBounds(closestRow);
-                    
-                    if(e.getY() >= closestRowBounds.getY() && 
-                            e.getY() < closestRowBounds.getY() + 
-                            closestRowBounds.getHeight()) {
-                    	
-                    		if(e.getX() > closestRowBounds.getX() && 
-                                closestRow < epiTree.getRowCount()){
-                        	epiTree.setSelectionRow(closestRow);                                              }
-                    } else
-                    	epiTree.setSelectionRow(-1);
-                }
+                getClosestSel(e);
 				  
 				if (e.getClickCount() == 2) {
 					checkDoubleClickEpitheliumJTree(e);
@@ -131,6 +118,10 @@ public class EpiTreePanel extends JPanel {
 			return;
 		}
 		this.epiTree.setSelectionPath(path);
+	}
+	
+	public DefaultMutableTreeNode getSelectedNode() {
+		return (DefaultMutableTreeNode) this.epiTree.getLastSelectedPathComponent();
 	}
 
 	public TreePath getSelectionPath() {
@@ -252,25 +243,26 @@ public class EpiTreePanel extends JPanel {
 		}
 	}
 	
+	private void getClosestSel(MouseEvent e) {
+		 int closestRow = epiTree.getClosestRowForLocation(e.getX(), e.getY());                          
+         Rectangle closestRowBounds = epiTree.getRowBounds(closestRow);
+			
+			if(e.getY() >= closestRowBounds.getY() && 
+                 e.getY() < closestRowBounds.getY() + 
+                 closestRowBounds.getHeight()) {
+         	
+         		if(e.getX() > closestRowBounds.getX() && 
+                     closestRow < epiTree.getRowCount()){
+             	epiTree.setSelectionRow(closestRow);                                              }
+         } else {
+         	epiTree.setSelectionRow(-1);
+				return;
+			}
+	}
+	
 	private void openPopUps(MouseEvent e) {
 			// popupmenu.updateMenuItems(listSBMLs.getSelectedValue() !=
 			// null);
-		    int closestRow = epiTree.getClosestRowForLocation(e.getX(), e.getY());                          
-            Rectangle closestRowBounds = epiTree.getRowBounds(closestRow);
-            
-		
-			
-			if(e.getY() >= closestRowBounds.getY() && 
-                    e.getY() < closestRowBounds.getY() + 
-                    closestRowBounds.getHeight()) {
-            	
-            		if(e.getX() > closestRowBounds.getX() && 
-                        closestRow < epiTree.getRowCount()){
-                	epiTree.setSelectionRow(closestRow);                                              }
-            } else {
-            	epiTree.setSelectionRow(-1);
-				return;
-			}									
 			// Only opens tabs for leafs
 			TreePath selPath = epiTree.getClosestPathForLocation(e.getX(), e.getY());
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();

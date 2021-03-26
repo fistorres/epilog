@@ -13,7 +13,7 @@ import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
 import org.epilogtool.gui.color.ColorUtils;
 
-public class EpitheliumPerturbations {
+public class EpitheliumPerturbations implements CoreDefinitions<Set<LogicalModelPerturbation>>{
 	private Set<LogicalModelPerturbation> lstPerturbations;
 	private Map<LogicalModelPerturbation, Color> perturbation2Color;
 
@@ -120,5 +120,11 @@ public class EpitheliumPerturbations {
 
 	public void delAllPerturbationsColors() {
 		this.perturbation2Color = new HashMap<LogicalModelPerturbation, Color>();	
+	}
+
+	@Override
+	public Set<LogicalModelPerturbation> parse() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

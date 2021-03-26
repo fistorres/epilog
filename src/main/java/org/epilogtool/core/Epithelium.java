@@ -61,7 +61,7 @@ public class Epithelium {
 	}
 
 	public boolean equals(Object o) {
-		Epithelium otherEpi = (Epithelium) o;
+		Epithelium otherEpi = (Epithelium) o;		
 		return (this.grid.equals(otherEpi.grid) && this.priorities.equals(otherEpi.priorities)
 				&& this.integrationFunctions.equals(otherEpi.integrationFunctions)
 				&& this.perturbations.equals(otherEpi.perturbations)

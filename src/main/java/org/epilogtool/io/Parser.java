@@ -275,9 +275,10 @@ public class Parser {
 							if (groupTemp[1].length() > 2) {
 								String[] rates = updater.substring(3, updater.length() - 1).split(",");
 								updater = updater.substring(0,2);
-								double[] doubleRates = new double[rates.length];
+								Double[] doubleRates = new Double[rates.length];
 								for (int e = 0; e < doubleRates.length; e++) {
-									doubleRates[e] = Double.parseDouble(rates[e]);
+									Double rate = (rates[e].equals("null")) ? null : Double.parseDouble(rates[e]);
+									doubleRates[e] = rate;
 								}
 							
 								up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater),
