@@ -9,10 +9,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map; 
+import java.util.Map;
+import java.util.Set;
+
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
@@ -543,8 +546,6 @@ public class Parser {
 			}
 		}
 		w.println();
-
-		
 		
 		// Model Priority classes
 		// PR #model node1,node2:...:nodei
@@ -623,7 +624,190 @@ public class Parser {
 		w.println("\n\n");
 		// EpitheliumCell Connections
 	}
+	
+	private String getTextFormatCellularUpdateMode(Epithelium epi) {
+		String text = "";
+		
+		Set<String> models = Project.getInstance().getModelNames();
 
+		for (String model : models) {
+			LogicalModel m = Project.getInstance().getModel(model);
+			if (epi.hasModel(m)) {
+				ModelGrouping mpc = epi.getPriorityClasses(m);
+				// Uses model name and not integer key, since the key is random for each parsing.
+				 text += "PR " + model + " " + mpc.toString();
+			}
+			text += "\n";
+		}
+		return text;
+	}
+	private String getTextFormatEpitheliumUpdateMode(Epithelium epi) {
+		String text = "AS " + epi.getUpdateSchemeInter().getAlpha();
+		return text;
+	}
+	private String getTextFormatInputDef(Epithelium epi) {
+		String text = "";
+		// IF Node Level {Function}
+		for (NodeInfo node : epi.getIntegrationNodes()) {
+			ComponentIntegrationFunctions cif = epi.getIntegrationFunctionsForComponent(node);
+			List<String> lFunctions = cif.getFunctions();
+			for (int i = 0; i < lFunctions.size(); i++) {
+				text += "IF " + " " + node.getNodeID() + " " + (i + 1) + " " + lFunctions.get(i);
+			}
+		}
+		return text;
+	}
+	private boolean parseCelullarUpdateMode(Epithelium epi, String text) {
+		if (text.startsWith("PR")) {
+			String[] saTmp = text.split("\\s+");
+			LogicalModel m = Project.getInstance().getModel(saTmp[1]);
+			
+			Map<Integer, Map<List<VarInfo>, LogicalModelUpdater>> pcList = 
+					new HashMap<Integer, Map<List<VarInfo>, LogicalModelUpdater>>();
+
+			String[] ranks = saTmp[2].split(SEPCLASS);
+			int rankCount = 0;
+			for (String rank : ranks) {
+				
+				Map<List<VarInfo>, LogicalModelUpdater> newGroups 
+				= new HashMap<List<VarInfo>, LogicalModelUpdater>();
+				
+				for(String group : rank.split(SEPGROUP)) {
+						String[] groupTemp = group.split(SEPUPDATER);
+					
+					LogicalModelUpdater up = null;
+					
+					String[] vars =  null;
+					if (groupTemp.length == 1) {
+						up = UpdaterFactoryModelGrouping.getUpdater(m,"Synchronous");
+						vars =  groupTemp[0].split(SEPVAR);
+
+					} else if (groupTemp.length == 2) {
+					
+						String updater = groupTemp[1];
+						if (groupTemp[1].length() > 2) {
+							String[] rates = updater.substring(3, updater.length() - 1).split(",");
+							updater = updater.substring(0,2);
+							Double[] doubleRates = new Double[rates.length];
+							for (int e = 0; e < doubleRates.length; e++) {
+								Double rate = (rates[e].equals("null")) ? null : Double.parseDouble(rates[e]);
+								doubleRates[e] = rate;
+							}
+						
+							up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater),
+									doubleRates);
+							vars =  groupTemp[0].split(SEPVAR);
+
+						} else {
+							up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater));
+							vars =  groupTemp[0].split(SEPVAR);
+						}
+					}
+			
+					List<VarInfo> newVars = new ArrayList<VarInfo>();
+					for (String var : vars) {
+						int split = 0;
+						if (var.endsWith(SplittingType.NEGATIVE.toString())) {
+							split = -1;
+							var = var.substring(0, var.length() - SplittingType.NEGATIVE.toString().length());
+						} else if (var.endsWith(SplittingType.POSITIVE.toString())) {
+							split = 1;
+							var = var.substring(0, var.length() - SplittingType.POSITIVE.toString().length());
+						}
+						for (int idx = 0; idx < m.getComponents().size(); idx++) {
+							NodeInfo node = m.getComponents().get(idx);
+							// find Node with var nodeID
+							if (node.getNodeID().equals(var)) {
+								VarInfo newVar = new VarInfo (idx, split, m);
+								newVars.add(newVar);
+							}
+						}
+					}
+					newGroups.put(newVars, up);
+				}
+				pcList.put(rankCount, newGroups);
+				rankCount ++;
+			}
+
+			ModelGrouping mpc = null;
+			try {
+				mpc = new ModelGrouping(m, pcList);
+				epi.setPriorityClasses(mpc);
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+	
+	private boolean parseEpitheliumUpdateMode(Epithelium epi, String text) {		
+		if (text.startsWith("AS")) {
+			String[] saTmp = text.split("\\s+");
+			try {
+				epi.getUpdateSchemeInter().setAlpha(Float.parseFloat(saTmp[1]));
+				return true;
+			} catch (Exception e) {				
+				return false;
+			}
+		}
+		return false;
+	}
+	private boolean parseInputDef(Epithelium epi, String text) {
+		// Component Integration Functions
+		// IT #model Node Level {Function}
+		// Old Integration function identifier, where an integration function was
+		// associated with a model and a component.
+		if (text.startsWith("IT")) {
+			String[] saTmp = text.split("\\s+");
+			byte value = Byte.parseByte(saTmp[3]);
+			String nodeID = saTmp[2];
+			String function = "";
+			if (saTmp.length > 4) {
+				int pos = text.indexOf(" ");
+				int n = 4;
+				while (--n > 0) {
+					pos = text.indexOf(" ", pos + 1);
+					
+				}
+				function = text.substring(pos).trim();
+			}
+			try {
+				epi.setIntegrationFunction(nodeID, value, function);
+					return true;
+			} catch (RuntimeException re) {
+				NotificationManager.warning("Parser",
+					"Integration function: " + saTmp[2] + ":" + value
+						+ " has invalid expression: " + function);
+			}
+		}
+		// IF #model Node Level {Function}
+		if (text.startsWith("IF")) {
+			String[] saTmp = text.split("\\s+");
+			byte value = Byte.parseByte(saTmp[2]);
+			String nodeID = saTmp[1];
+			String function = "";
+			if (saTmp.length > 3) {
+				int pos = text.indexOf(" ");
+				int n = 4;
+				while (--n > 0) {
+					pos = text.indexOf(" ", pos + 1);
+				}
+				function = text.substring(pos).trim();
+			}
+			try {
+				epi.setIntegrationFunction(nodeID, value, function);
+				return true;
+			} catch (RuntimeException re) {
+				NotificationManager.warning("Parser",
+						"Integration function: " + nodeID + ":" + value + 
+							" has invalid expression: " + function);
+				return false;
+			}
+		}
+		return false;
+	}
+	
 	private static List<String> compactIntegerSequences(List<Integer> iInsts) {
 		List<String> sInsts = new ArrayList<String>();
 		if (iInsts.size() == 1) {
