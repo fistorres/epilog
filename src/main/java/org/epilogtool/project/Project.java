@@ -17,6 +17,12 @@ public class Project {
 	private List<Epithelium> epitheliumList;
 	private ProjectFeatures projectFeatures;
 	private String filenamePEPS;
+	
+	// dialog files
+	private String filenameCellularMode;
+	private String filenameInput;
+	private String filenameEpiMode;
+	
 	private boolean isChanged;
 
 	private static Project project;
@@ -89,6 +95,16 @@ public class Project {
 
 	public void setFilenamePEPS(String filename) {
 		this.filenamePEPS = filename;
+	}
+	
+	public void setFilenameCellularMode(String filename) {
+		this.filenameCellularMode = filename;
+	}
+	public void setFilenameInput(String filename) {
+		this.filenameInput = filename;
+	}
+	public void setFileNameEpiMode(String filename) {
+		this.filenameEpiMode = filename;
 	}
 
 	public Epithelium newEpithelium(int x, int y, String topologyID, String userName, String modelName,

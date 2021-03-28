@@ -535,7 +535,8 @@ public class EpiGUI extends JFrame {
 	 * @throws ClassNotFoundException
 	 */
 	public void loadPEPS(String filename)
-			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			throws InstantiationException,
+			IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, ClassNotFoundException {
 		if (!this.canClose(Txt.get("s_APP_LOAD"))) {
 			return;
@@ -587,7 +588,8 @@ public class EpiGUI extends JFrame {
 			// check if file already exists
 			while (doExport && destinationFile.exists() && !overrideExistingFile) {
 				// let the user decide whether to override the existing file
-				overrideExistingFile = (JOptionPane.showConfirmDialog(this, "Replace file " + destinationFile.getAbsolutePath() + "?", "Export settings",
+				overrideExistingFile = (JOptionPane.showConfirmDialog(this, "Replace file " + 
+				destinationFile.getAbsolutePath() + "?", "Export settings",
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
 
 				// let the user choose another file if the existing file shall not be overridden
@@ -614,6 +616,7 @@ public class EpiGUI extends JFrame {
 			}
 		}
 	}
+	
 
 	public void savePEPS() throws Exception {
 		String fName = Project.getInstance().getFilenamePEPS();
@@ -624,6 +627,74 @@ public class EpiGUI extends JFrame {
 			Project.getInstance().setChanged(false);
 			this.validateGUI();
 		}
+	}
+	
+	public void saveAsTxt(String def) throws Exception {
+		// declare JFileChooser
+		JFileChooser fileChooser = new JFileChooser();
+	
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(".txt", "txt");
+		fileChooser.setFileFilter(filter);
+		
+//		String fName = Project.getInstance().;
+//				if (fName != null) {
+//					fileChooser.setCurrentDirectory(new java.io.File(fName));
+//				}
+
+		// let the user choose the destination file
+		if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			// indicates whether the user still wants to export the settings
+			boolean doExport = true;
+			
+			// indicates whether to override an already existing file
+			boolean overrideExistingFile = false;
+
+			// get destination file
+			String name_ext = fileChooser.getSelectedFile().getAbsolutePath();
+			name_ext += (name_ext.endsWith(".txt") ? "" : ".txt");
+			File destinationFile = new File(name_ext);
+
+			// check if file already exists
+			while (doExport && destinationFile.exists() && !overrideExistingFile) {
+				// let the user decide whether to override the existing file
+				overrideExistingFile = (JOptionPane.showConfirmDialog(this, "Replace file " + 
+				destinationFile.getAbsolutePath() + "?", "Export settings",
+						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
+
+					// let the user choose another file if the existing file shall not be overridden
+					if (!overrideExistingFile) {
+						if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+							// get new destination file
+							name_ext = fileChooser.getSelectedFile().getAbsolutePath();
+							name_ext += (name_ext.endsWith(".txt") ? "" : ".txt");
+							destinationFile = new File(name_ext);
+						} else {
+							// seems like the user does not want to export the settings any longer
+							doExport = false;
+						}
+					}
+				}
+
+			if (doExport) {
+				// save the peps file with the new name and update Project
+				FileIO.saveTxt(destinationFile.getAbsolutePath(), def);
+				
+//				Project.getInstance().setFilenamePEPS(destinationFile.getAbsolutePath());
+//				Project.getInstance().setChanged(false);
+				this.validateGUI();
+			}
+		 }
+	}
+	
+	public boolean loadTxt(DialogEditByText dia) throws IOException {
+		String filename = FileSelectionHelper.openFilename("txt");
+		if (filename != null) {
+			File tmpFile = new File(filename);
+			if (tmpFile.exists()) {
+				dia.loadFile(filename);
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -851,14 +922,23 @@ public class EpiGUI extends JFrame {
 		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
 		DefaultMutableTreeNode node = this.epiTreePanel.getSelectedNode();
 		
-		DialogEditByText editDialog = new DialogEditByText(epi, node.toString());
-		
-		Window win = SwingUtilities.getWindowAncestor(this);
-		JDialog dialog = new JDialog(win, "View \"" + node.toString() + "\" as text", ModalityType.APPLICATION_MODAL);
-		dialog.getContentPane().add(editDialog);
-		dialog.pack();
-		dialog.setLocationRelativeTo(null);
-		dialog.setVisible(true);
+		DialogEditByText dia = null;
+		if (node.toString().equals(DialogEditByText.TAB_EPIUPDATING)) {
+			dia = new EpitheliumUpdateEditByTextDialog(epi);
+		} else if (node.toString().equals(DialogEditByText.TAB_INTEGRATION)) {
+			dia = new IntegrationEditByTextDialog(epi);
+		} else if (node.toString().equals(DialogEditByText.TAB_PRIORITIES)) {
+			dia = new CellularModelUpdateEditByTextDialog(epi);
+		}
+		if (dia != null) {
+			
+			Window win = SwingUtilities.getWindowAncestor(this);
+			JDialog dialog = new JDialog(win, "View \"" + node.toString() + "\" as text", ModalityType.APPLICATION_MODAL);
+			dialog.getContentPane().add(dia);
+			dialog.pack();
+			dialog.setLocationRelativeTo(null);
+			dialog.setVisible(true);
+		}	
 
 	}
 

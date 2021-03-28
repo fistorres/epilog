@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.zip.ZipEntry;
@@ -226,6 +227,14 @@ public class FileIO {
 		FileIO.zipTmpDir(newPEPSTmpDir, newPEPSFile);
 		OptionStore.addRecentFile(newPEPSFile);
 	}
+	
+	public static void saveTxt(String newFile, String newTxt) throws Exception {
+		// Save config.txt to tmpDir
+		PrintWriter w = new PrintWriter(new FileWriter(newFile));
+		w.println(newTxt);
+		w.close();
+	}
+
 
 	public static void writeEpitheliumGrid2File(String file, Container c, String ext) {
 		BufferedImage dest = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);

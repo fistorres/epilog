@@ -625,7 +625,7 @@ public class Parser {
 		// EpitheliumCell Connections
 	}
 	
-	private String getTextFormatCellularUpdateMode(Epithelium epi) {
+	public static String getTextFormatCellularUpdateMode(Epithelium epi) {
 		String text = "";
 		
 		Set<String> models = Project.getInstance().getModelNames();
@@ -641,11 +641,11 @@ public class Parser {
 		}
 		return text;
 	}
-	private String getTextFormatEpitheliumUpdateMode(Epithelium epi) {
+	public static String getTextFormatEpitheliumUpdateMode(Epithelium epi) {
 		String text = "AS " + epi.getUpdateSchemeInter().getAlpha();
 		return text;
 	}
-	private String getTextFormatInputDef(Epithelium epi) {
+	public static String getTextFormatInputDef(Epithelium epi) {
 		String text = "";
 		// IF Node Level {Function}
 		for (NodeInfo node : epi.getIntegrationNodes()) {
@@ -657,9 +657,16 @@ public class Parser {
 		}
 		return text;
 	}
-	private boolean parseCelullarUpdateMode(Epithelium epi, String text) {
-		if (text.startsWith("PR")) {
-			String[] saTmp = text.split("\\s+");
+	public static boolean parseCelullarUpdateMode(Epithelium epi, String[] definitions, boolean valid) throws NumberFormatException, IOException {
+		
+		String[] saTmp;
+		try {
+
+		for (String line : definitions) {
+			line = line.trim();
+			
+		if (line.startsWith("PR")) {
+			saTmp = line.split("\\s+");
 			LogicalModel m = Project.getInstance().getModel(saTmp[1]);
 			
 			Map<Integer, Map<List<VarInfo>, LogicalModelUpdater>> pcList = 
@@ -679,7 +686,11 @@ public class Parser {
 					
 					String[] vars =  null;
 					if (groupTemp.length == 1) {
-						up = UpdaterFactoryModelGrouping.getUpdater(m,"Synchronous");
+						try {
+							up = UpdaterFactoryModelGrouping.getUpdater(m,"Synchronous");
+						} catch (Exception ex) {
+							return false;
+						}
 						vars =  groupTemp[0].split(SEPVAR);
 
 					} else if (groupTemp.length == 2) {
@@ -687,6 +698,8 @@ public class Parser {
 						String updater = groupTemp[1];
 						if (groupTemp[1].length() > 2) {
 							String[] rates = updater.substring(3, updater.length() - 1).split(",");
+							if (rates.length != m.getComponents().size()*2) 
+								return false;
 							updater = updater.substring(0,2);
 							Double[] doubleRates = new Double[rates.length];
 							for (int e = 0; e < doubleRates.length; e++) {
@@ -705,7 +718,9 @@ public class Parser {
 					}
 			
 					List<VarInfo> newVars = new ArrayList<VarInfo>();
+					boolean varFound = false;
 					for (String var : vars) {
+						varFound = false;
 						int split = 0;
 						if (var.endsWith(SplittingType.NEGATIVE.toString())) {
 							split = -1;
@@ -720,8 +735,10 @@ public class Parser {
 							if (node.getNodeID().equals(var)) {
 								VarInfo newVar = new VarInfo (idx, split, m);
 								newVars.add(newVar);
+								varFound = true;
 							}
-						}
+						} if (varFound == false) 
+							return false;
 					}
 					newGroups.put(newVars, up);
 				}
@@ -732,77 +749,102 @@ public class Parser {
 			ModelGrouping mpc = null;
 			try {
 				mpc = new ModelGrouping(m, pcList);
-				epi.setPriorityClasses(mpc);
+				if (mpc.getClass(0).isEmpty()) 
+					return false;
+				if (valid) 
+					epi.setPriorityClasses(mpc);
 				return true;
 			} catch (Exception e) {
 				e.printStackTrace();
+				return false;
 			}
 		}
+	}
 		return false;
+		} catch (Exception ae) {
+			return false;
+		}
 	}
 	
-	private boolean parseEpitheliumUpdateMode(Epithelium epi, String text) {		
-		if (text.startsWith("AS")) {
-			String[] saTmp = text.split("\\s+");
-			try {
-				epi.getUpdateSchemeInter().setAlpha(Float.parseFloat(saTmp[1]));
-				return true;
-			} catch (Exception e) {				
-				return false;
+	public static boolean parseEpitheliumUpdateMode(Epithelium epi, String[] definitions,
+			boolean valid) throws IOException {		
+		
+		String[] saTmp;
+
+		for (String line : definitions) {
+			line = line.trim();
+			
+			if (line.startsWith("AS")) {
+				saTmp = line.split("\\s+");
+				try {
+					Float alfa = Float.parseFloat(saTmp[1]);
+					if (valid) 
+						epi.getUpdateSchemeInter().setAlpha(alfa);
+					return true;
+				} catch (Exception e) {				
+					return false;
+				}
 			}
 		}
 		return false;
 	}
-	private boolean parseInputDef(Epithelium epi, String text) {
-		// Component Integration Functions
-		// IT #model Node Level {Function}
-		// Old Integration function identifier, where an integration function was
-		// associated with a model and a component.
-		if (text.startsWith("IT")) {
-			String[] saTmp = text.split("\\s+");
-			byte value = Byte.parseByte(saTmp[3]);
-			String nodeID = saTmp[2];
-			String function = "";
-			if (saTmp.length > 4) {
-				int pos = text.indexOf(" ");
-				int n = 4;
-				while (--n > 0) {
-					pos = text.indexOf(" ", pos + 1);
+	public static boolean parseInputDef(Epithelium epi, String[] definitions, boolean valid) throws NumberFormatException, IOException {
+
+		String[] saTmp;
+
+		for (String line : definitions) {
+			line = line.trim();
+			
+			// Component Integration Functions
+			// IT #model Node Level {Function}
+			// Old Integration function identifier, where an integration function was
+			// associated with a model and a component.
+			if (line.startsWith("IT")) {
+				saTmp = line.split("\\s+");
+				byte value = Byte.parseByte(saTmp[3]);
+				String nodeID = saTmp[2];
+				String function = "";
+				if (saTmp.length > 4) {
+					int pos = line.indexOf(" ");
+					int n = 4;
+					while (--n > 0) {
+						pos = line.indexOf(" ", pos + 1);
 					
+					}
+					function = line.substring(pos).trim();
 				}
-				function = text.substring(pos).trim();
-			}
-			try {
-				epi.setIntegrationFunction(nodeID, value, function);
+				try {
+					epi.setIntegrationFunction(nodeID, value, function);
 					return true;
-			} catch (RuntimeException re) {
-				NotificationManager.warning("Parser",
-					"Integration function: " + saTmp[2] + ":" + value
-						+ " has invalid expression: " + function);
-			}
-		}
-		// IF #model Node Level {Function}
-		if (text.startsWith("IF")) {
-			String[] saTmp = text.split("\\s+");
-			byte value = Byte.parseByte(saTmp[2]);
-			String nodeID = saTmp[1];
-			String function = "";
-			if (saTmp.length > 3) {
-				int pos = text.indexOf(" ");
-				int n = 4;
-				while (--n > 0) {
-					pos = text.indexOf(" ", pos + 1);
+				} catch (RuntimeException re) {
+					NotificationManager.warning("Parser",
+							"Integration function: " + saTmp[2] + ":" + value
+							+ " has invalid expression: " + function);
 				}
-				function = text.substring(pos).trim();
 			}
-			try {
-				epi.setIntegrationFunction(nodeID, value, function);
-				return true;
-			} catch (RuntimeException re) {
-				NotificationManager.warning("Parser",
-						"Integration function: " + nodeID + ":" + value + 
-							" has invalid expression: " + function);
-				return false;
+		// IF #model Node Level {Function}
+			if (line.startsWith("IF")) {
+				saTmp = line.split("\\s+");
+				byte value = Byte.parseByte(saTmp[2]);
+				String nodeID = saTmp[1];
+				String function = "";
+				if (saTmp.length > 3) {
+					int pos = line.indexOf(" ");
+					int n = 4;
+					while (--n > 0) {
+						pos = line.indexOf(" ", pos + 1);
+					}
+					function = line.substring(pos).trim();
+				}
+				try {
+					epi.setIntegrationFunction(nodeID, value, function);
+					return true;
+				} catch (RuntimeException re) {
+					NotificationManager.warning("Parser",
+							"Integration function: " + nodeID + ":" + value + 
+								" has invalid expression: " + function);
+					return false;
+				}
 			}
 		}
 		return false;
