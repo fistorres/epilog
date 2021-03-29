@@ -126,7 +126,7 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 	}
 
 	@Override
-	protected void buttonReset() {
+	public void buttonReset() {
 		this.mModel2PCP.clear();
 		this.userPriorityClasses = new EpitheliumUpdateSchemeIntra();
 		for (LogicalModel m : this.epithelium.getEpitheliumGrid().getModelSet()) {

@@ -516,7 +516,7 @@ public class EpiTabPerturbations extends EpiTabDefinitions {
 	}
 
 	@Override
-	protected void buttonReset() {
+	public void buttonReset() {
 		// Reset modifications on perturbation grid clone
 		EpitheliumGrid grid = this.epithelium.getEpitheliumGrid();
 		for (int x = 0; x < grid.getX(); x++) {

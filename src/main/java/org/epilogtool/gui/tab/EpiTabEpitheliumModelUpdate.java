@@ -178,7 +178,7 @@ public class EpiTabEpitheliumModelUpdate extends EpiTabDefinitions implements Hy
 	}
 
 	@Override
-	protected void buttonReset() {
+	public void buttonReset() {
 		this.jAlphaSlide.setValue((int) (this.epithelium.getUpdateSchemeInter().getAlpha() * SLIDER_MAX));
 		this.updateAlpha(this.jAlphaSlide.getValue());
 		this.updateSchemeInter.setUpdateCells(this.epithelium.getUpdateSchemeInter().getUpdateCells());

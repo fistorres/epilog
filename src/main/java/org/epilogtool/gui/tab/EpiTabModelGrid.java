@@ -211,7 +211,7 @@ public class EpiTabModelGrid extends EpiTabDefinitions {
 	}
 	
 	@Override
-	protected void buttonReset() {
+	public void buttonReset() {
 		// Cancel Models
 		for (int x = 0; x < this.modelGridClone.length; x++) {
 			for (int y = 0; y < this.modelGridClone[0].length; y++) {

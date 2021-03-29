@@ -14,6 +14,7 @@ import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.Tuple2D;
+import org.epilogtool.core.EpitheliumPhenotypes.Phenotype;
 import org.epilogtool.core.topology.RollOver;
 import org.epilogtool.gui.dialog.DialogMessage;
 import org.epilogtool.project.Project;
@@ -25,6 +26,7 @@ public class Epithelium {
 	private EpitheliumPerturbations perturbations;
 	private EpitheliumUpdateSchemeIntra priorities;
 	private EpitheliumUpdateSchemeInter updateSchemeInter;
+	private EpitheliumPhenotypes phenotypesTrack;
 
 	public Epithelium(int x, int y, String topologyID, String name, LogicalModel m, RollOver rollover,
 			EnumRandomSeed randomSeedType, int randomSeed)
@@ -38,22 +40,27 @@ public class Epithelium {
 		this.perturbations = new EpitheliumPerturbations();
 		this.updateSchemeInter = new EpitheliumUpdateSchemeInter(EpitheliumUpdateSchemeInter.DEFAULT_ALPHA,
 				UpdateCells.UPDATABLECELLS, randomSeedType, randomSeed);
+		this.phenotypesTrack = new EpitheliumPhenotypes();
 	}
 
 	private Epithelium(String name, EpitheliumGrid grid, EpitheliumIntegrationFunctions eif,
-			EpitheliumUpdateSchemeIntra epc, EpitheliumPerturbations eap, EpitheliumUpdateSchemeInter usi) {
+			EpitheliumUpdateSchemeIntra epc, EpitheliumPerturbations eap, EpitheliumUpdateSchemeInter usi,
+			EpitheliumPhenotypes phenos) {
 		this.name = name;
 		this.grid = grid;
 		this.priorities = epc;
 		this.integrationFunctions = eif;
 		this.perturbations = eap;
 		this.updateSchemeInter = usi;
+		this.phenotypesTrack = phenos;
+
 		// this.sComponentsUsed2Node = new HashMap<String, NodeInfo>();
 	}
 
 	public Epithelium clone() {
 		return new Epithelium("CopyOf_" + this.name, this.grid.clone(), this.integrationFunctions.clone(),
-				this.priorities.clone(), this.perturbations.clone(), this.updateSchemeInter.clone());
+				this.priorities.clone(), this.perturbations.clone(), this.updateSchemeInter.clone(),
+						this.phenotypesTrack.clone());
 	}
 
 	public String toString() {
@@ -65,8 +72,11 @@ public class Epithelium {
 		return (this.grid.equals(otherEpi.grid) && this.priorities.equals(otherEpi.priorities)
 				&& this.integrationFunctions.equals(otherEpi.integrationFunctions)
 				&& this.perturbations.equals(otherEpi.perturbations)
-				&& this.updateSchemeInter.equals(otherEpi.getUpdateSchemeInter()));
+				&& this.updateSchemeInter.equals(otherEpi.getUpdateSchemeInter())
+			    && this.phenotypesTrack.equals(otherEpi.getPhenosToTrack()));
 	}
+
+
 
 	public void updateEpitheliumGrid(int gridX, int gridY, String topologyID, RollOver rollover)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
@@ -119,6 +129,7 @@ public class Epithelium {
 				this.integrationFunctions.removeComponent(node);
 			}
 		}
+		
 	}
 
 	public String getName() {
@@ -177,6 +188,21 @@ public class Epithelium {
 
 	public EpitheliumPerturbations getEpitheliumPerturbations() {
 		return this.perturbations;
+	}
+	
+	public EpitheliumPhenotypes getPhenosToTrack() {
+		return this.phenotypesTrack;
+	}
+	
+	public void setPhenosToTrack(EpitheliumPhenotypes phenos) {
+		this.phenotypesTrack = phenos;
+	}
+	
+	public void addPheno(LogicalModel m, Color color, String name, String pheno) {
+		this.phenotypesTrack.addPhenotype(m, color, name, pheno);
+	}
+	public void addPhenosArray(LogicalModel m, ArrayList<Phenotype> phenoArray) {
+		this.phenotypesTrack.addPhenoArray(m, phenoArray);
 	}
 
 	public void setGridWithComponentValue(String nodeID, byte value, List<Tuple2D<Integer>> lTuples) {

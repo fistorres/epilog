@@ -591,7 +591,7 @@ public class EpiTabInitialConditions extends EpiTabDefinitions {
 	}
 
 	@Override
-	protected void buttonReset() {
+	public void buttonReset() {
 		// Cancel CellGrid
 
 		for (int x = 0; x < this.epiGridClone.getX(); x++) {

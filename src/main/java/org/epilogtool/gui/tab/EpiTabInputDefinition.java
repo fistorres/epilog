@@ -387,7 +387,7 @@ public class EpiTabInputDefinition extends EpiTabDefinitions {
 	}
 
 	@Override
-	protected void buttonReset() {
+	public void buttonReset() {
 		this.userIntegrationFunctions = this.epithelium.getIntegrationFunctions().clone();
 		this.updateNodeID();
 		// Repaint 

@@ -23,7 +23,8 @@ public abstract class EscapableDialog extends JPanel {
 				dispose();
 			}
 		};
-		this.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "ESCAPE");
+		this.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "ESCAPE"
+	);
 		this.getActionMap().put("ESCAPE", a);
 		this.addFocusListener(new FocusListener() {
 			@Override

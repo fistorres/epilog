@@ -42,7 +42,7 @@ public abstract class EpiTabDefinitions extends EpiTab {
 		this.add(south, BorderLayout.SOUTH);
 	}
 
-	abstract protected void buttonReset();
+	public abstract void buttonReset();
 
 	abstract protected void buttonAccept();
 

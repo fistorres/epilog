@@ -61,12 +61,14 @@ import org.epilogtool.gui.menu.ToolsMenu;
 import org.epilogtool.gui.menu.WindowMenu;
 import org.epilogtool.gui.tab.EpiTab;
 import org.epilogtool.gui.tab.EpiTabCellularModelUpdate;
+import org.epilogtool.gui.tab.EpiTabDefinitions;
 import org.epilogtool.gui.tab.EpiTabEpitheliumModelUpdate;
 import org.epilogtool.gui.tab.EpiTabInitialConditions;
 import org.epilogtool.gui.tab.EpiTabInputDefinition;
 import org.epilogtool.gui.tab.EpiTabModelGrid;
 import org.epilogtool.gui.tab.EpiTabPerturbations;
 import org.epilogtool.gui.tab.EpiTabSimulation;
+import org.epilogtool.gui.tab.EpiTabTrackPhenotypes;
 import org.epilogtool.gui.widgets.CloseTabButton;
 import org.epilogtool.io.FileIO;
 import org.epilogtool.io.FileResource;
@@ -917,6 +919,23 @@ public class EpiGUI extends JFrame {
 		return tabIndex;
 	}
 	
+	public void alertEditByTextChanges(DialogEditByText dia) {
+		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
+		TreePath selPath = this.epiTreePanel.getSelectionPath();
+		DefaultMutableTreeNode node = this.epiTreePanel.getSelectedNode();
+		
+		this.openEpiTab(epi, selPath, node.toString());
+
+		int tabIndex = this.getTabIndexForPath(selPath);
+		EpiTabDefinitions epiTab = (EpiTabDefinitions) this.epiRightFrame.getComponentAt(tabIndex);
+		epiTab.notifyChange();
+		epiTab.buttonReset();
+		
+		dia.close();
+		JOptionPane.showMessageDialog(new JFrame(), node.toString() + " definitions were changed by text!");
+		validateGUI();
+	}
+	
 	public void openEditByTextDialog() {
 		// get the epithelium
 		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
@@ -931,7 +950,6 @@ public class EpiGUI extends JFrame {
 			dia = new CellularModelUpdateEditByTextDialog(epi);
 		}
 		if (dia != null) {
-			
 			Window win = SwingUtilities.getWindowAncestor(this);
 			JDialog dialog = new JDialog(win, "View \"" + node.toString() + "\" as text", ModalityType.APPLICATION_MODAL);
 			dialog.getContentPane().add(dia);
@@ -939,7 +957,6 @@ public class EpiGUI extends JFrame {
 			dialog.setLocationRelativeTo(null);
 			dialog.setVisible(true);
 		}	
-
 	}
 
 	public void openEpiTab(Epithelium epi, TreePath selPath, String tabName) {
@@ -961,6 +978,8 @@ public class EpiGUI extends JFrame {
 				epiTab = new EpiTabEpitheliumModelUpdate(epi, selPath, tabChanged);
 			} else if (tabName.equals(EpiTab.TAB_MODELGRID)) {
 				epiTab = new EpiTabModelGrid(epi, selPath, tabChanged);
+			} else if (tabName.equals(EpiTab.TAB_PHENOTYPES)) {
+				epiTab = new EpiTabTrackPhenotypes(epi, selPath, tabChanged);
 			}
 			if (epiTab != null) {
 				this.epiRightFrame.addTab(title, epiTab);

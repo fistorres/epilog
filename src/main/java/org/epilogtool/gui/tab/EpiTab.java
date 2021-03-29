@@ -19,6 +19,7 @@ public abstract class EpiTab extends JPanel {
 	public static final String TAB_CELLDIVISION = Txt.get("s_TAB_CELLDIVISION");
 	public static final String TOOL_SIMULATION = Txt.get("s_TOOL_SIMULATION");
 	public static final String TOOL_MONTECARLO = Txt.get("s_TOOL_MONTECARLO");
+	public static final String TAB_PHENOTYPES = Txt.get("s_TAB_SELECTPHENOTYPE");
 
 	protected Epithelium epithelium; 
 	protected TreePath path;
