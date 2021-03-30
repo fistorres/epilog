@@ -36,6 +36,7 @@ import org.epilogtool.core.ComponentIntegrationFunctions;
 import org.epilogtool.core.EmptyModel;
 import org.epilogtool.core.Epithelium;
 import org.epilogtool.core.EpitheliumGrid;
+import org.epilogtool.core.EpitheliumPhenotypes.Phenotype;
 import org.epilogtool.core.UpdateCells;
 import org.epilogtool.core.topology.RollOver;
 import org.epilogtool.gui.color.ColorUtils;
@@ -350,6 +351,16 @@ public class Parser {
 					currEpi.applyPerturbation(ap, c, lTuple);
 				}
 			}
+			
+			if (line.startsWith("PH")) { 
+				saTmp = line.split("\\s+");
+//				LogicalModel m = Project.getInstance().getModel(saTmp[1]);
+				LogicalModel m = Project.getInstance().getModel(modelKey2Name.get(saTmp[1]));
+				Color color = ColorUtils.getColor(saTmp[4], saTmp[5], saTmp[6]);
+				currEpi.addPheno(m, saTmp[2], Boolean.parseBoolean(saTmp[3]),
+						color, saTmp[7]);
+			}
+			
 		}
 		br.close();
 		in.close();
@@ -618,11 +629,45 @@ public class Parser {
 				}
 			}
 			w.println();
-
+			
+		
+		 Set<String> models = Project.getInstance().getModelNames();
+		 for (String model : models) {
+				LogicalModel m = Project.getInstance().getModel(model);
+			 	Integer modelInt = model2Key.get(model);
+				if (epi.hasModel(m)) {
+					ArrayList<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
+					for (Phenotype pheno : phenos)
+						w.print("PH " + modelInt + " " + pheno.getName() + " " + pheno.getUse() + " " + 
+					 ColorUtils.getColorCode(pheno.getColor()) + " " + pheno.getPheno());
+				}
 		}
-
+		w.println();
+		
+		}
 		w.println("\n\n");
 		// EpitheliumCell Connections
+	}
+	
+	
+
+	public static String getTextFormatPhenotypes(Epithelium epi) {
+		String text = "";
+		Set<String> models = Project.getInstance().getModelNames();
+
+		for (String model : models) {
+			LogicalModel m = Project.getInstance().getModel(model);
+			if (epi.hasModel(m)) {
+				ArrayList<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
+				for (Phenotype pheno : phenos)
+				 text += "PH " + model + " " + pheno.getName() + " " + pheno.getUse() + " " + 
+				 ColorUtils.getColorCode(pheno.getColor()) + " " + pheno.getPheno();
+			}
+			text += "\n";
+		}
+		return text;
+		
+		
 	}
 	
 	public static String getTextFormatCellularUpdateMode(Epithelium epi) {
@@ -657,6 +702,27 @@ public class Parser {
 		}
 		return text;
 	}
+	
+	public static boolean parsePhenotypes(Epithelium epi, String[] definitions, boolean save) {
+		
+		String[] saTmp;
+		try {
+			for (String line : definitions) {
+				line = line.trim();
+				if (line.startsWith("PH")) { 
+					saTmp = line.split("\\s+");
+					LogicalModel m = Project.getInstance().getModel(saTmp[1]);
+					Color color = ColorUtils.getColor(saTmp[4], saTmp[5], saTmp[6]);
+					epi.addPheno(m, saTmp[2], Boolean.parseBoolean(saTmp[3]),
+							color, saTmp[7]);
+				}
+			}
+		} catch (Exception  e) {
+			return false;
+		}
+		return true;
+	}
+	
 	public static boolean parseCelullarUpdateMode(Epithelium epi, String[] definitions, boolean valid) throws NumberFormatException, IOException {
 		
 		String[] saTmp;
@@ -892,4 +958,6 @@ public class Parser {
 		}
 		return s;
 	}
+
+
 }

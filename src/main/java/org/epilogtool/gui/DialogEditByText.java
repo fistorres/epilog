@@ -45,6 +45,7 @@ public abstract class DialogEditByText extends EscapableDialog {
 	public static final String TAB_INTEGRATION = Txt.get("s_TAB_INTEGRATION");
 	public static final String TAB_PRIORITIES = Txt.get("s_TAB_PRIORITIES");
 	public static final String TAB_EPIUPDATING = Txt.get("s_TAB_EPIUPDATING");
+	public static final String TAB_PHENOTYPES = Txt.get("s_TAB_SELECTPHENOTYPE");
 	
 	public Epithelium epi;
 	
@@ -66,7 +67,7 @@ public abstract class DialogEditByText extends EscapableDialog {
 	// private somethingWithParserObjectInterfase objectToModify;
 	
 	
-	DialogEditByText(Epithelium epi) {
+	protected DialogEditByText(Epithelium epi) {
 		this.epi = epi;
 		this.setLayout(new BorderLayout());
 		

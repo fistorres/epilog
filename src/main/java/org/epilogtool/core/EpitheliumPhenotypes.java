@@ -36,12 +36,12 @@ public class EpitheliumPhenotypes {
 		return this.phenotypesToTrack.get(m);
 	}
 
-	public void addPhenotype(LogicalModel model, Color color, String name, String pheno) {
+	public void addPhenotype(LogicalModel model, String name, Boolean use, Color color, String pheno) {
 		if (!this.phenotypesToTrack.containsKey(model))
 			this.addModel(model);
 		
 		ArrayList<Phenotype> temp = this.phenotypesToTrack.get(model);
-		temp.add(new Phenotype(color, name, pheno));
+		temp.add(new Phenotype(color, name, pheno, use));
 
 	}
 	
@@ -87,13 +87,15 @@ public class EpitheliumPhenotypes {
 	public class Phenotype {
 		
 		private Color phenoColor;
+		private Boolean use;
 		private String name;
 		private String pheno; // ^[1,0,.]$		
 		
-		Phenotype(Color color, String name, String pheno) {
+		Phenotype(Color color, String name, String pheno, Boolean use) {
 			this.phenoColor = color;
 			this.name = name;
 			this.pheno = pheno;
+			this.use = use;
 		}
 		
 		public boolean match(byte[] state) {
@@ -101,8 +103,21 @@ public class EpitheliumPhenotypes {
 			return Pattern.matches(pheno, stateS);
 		}
 		
+		public Color getColor() {
+			return this.phenoColor;
+		}
+		public String getName() {
+			return this.name;
+		}
+		public String getPheno() {
+			return this.pheno;
+		}
+		public Boolean getUse() {
+			return this.use;
+		}
+		
 		public Phenotype clone() {
-			return new Phenotype(this.phenoColor, this.name, this.pheno);
+			return new Phenotype(this.phenoColor, this.name, this.pheno, this.use);
 		}
 		
 		public boolean equals(Object o) {

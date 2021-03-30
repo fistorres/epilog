@@ -198,8 +198,8 @@ public class Epithelium {
 		this.phenotypesTrack = phenos;
 	}
 	
-	public void addPheno(LogicalModel m, Color color, String name, String pheno) {
-		this.phenotypesTrack.addPhenotype(m, color, name, pheno);
+	public void addPheno(LogicalModel m, String name, Boolean use, Color color, String pheno) {
+		this.phenotypesTrack.addPhenotype(m, name, use, color, pheno);
 	}
 	public void addPhenosArray(LogicalModel m, ArrayList<Phenotype> phenoArray) {
 		this.phenotypesTrack.addPhenoArray(m, phenoArray);

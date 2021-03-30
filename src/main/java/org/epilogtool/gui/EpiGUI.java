@@ -52,6 +52,7 @@ import org.epilogtool.gui.dialog.DialogMessage;
 import org.epilogtool.gui.dialog.DialogNewEpithelium;
 import org.epilogtool.gui.dialog.DialogRenameSBML;
 import org.epilogtool.gui.dialog.DialogReplaceSBML;
+import org.epilogtool.gui.dialog.PhenotypesEditByTextDialog;
 import org.epilogtool.gui.menu.CellularModelMenu;
 import org.epilogtool.gui.menu.CloseTabPopupMenu;
 import org.epilogtool.gui.menu.EpitheliumMenu;
@@ -948,6 +949,8 @@ public class EpiGUI extends JFrame {
 			dia = new IntegrationEditByTextDialog(epi);
 		} else if (node.toString().equals(DialogEditByText.TAB_PRIORITIES)) {
 			dia = new CellularModelUpdateEditByTextDialog(epi);
+		} else if (node.toString().equals(DialogEditByText.TAB_PHENOTYPES)) {
+			dia = new PhenotypesEditByTextDialog(epi);
 		}
 		if (dia != null) {
 			Window win = SwingUtilities.getWindowAncestor(this);
