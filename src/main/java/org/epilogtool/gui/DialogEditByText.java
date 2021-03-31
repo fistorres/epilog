@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -27,6 +28,8 @@ import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
+import org.colomoto.biolqm.LogicalModel;
+import org.colomoto.biolqm.NodeInfo;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
@@ -34,6 +37,7 @@ import org.epilogtool.core.topology.RollOver;
 import org.epilogtool.gui.EpiGUI.TabChangeNotifyProj;
 import org.epilogtool.gui.color.ColorUtils;
 import org.epilogtool.gui.dialog.EscapableDialog;
+import org.epilogtool.project.Project;
 
 public abstract class DialogEditByText extends EscapableDialog {
 	
@@ -101,8 +105,8 @@ public abstract class DialogEditByText extends EscapableDialog {
 			public void actionPerformed(ActionEvent e) {
 			try {
 				parse(def.getText().split("\\n"), true);
-				EpiGUI.getInstance().alertEditByTextChanges(getThis());
-//				close();
+//				EpiGUI.getInstance().alertEditByTextChanges(getThis());
+				close();
 			} catch (NumberFormatException | IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -165,7 +169,7 @@ public abstract class DialogEditByText extends EscapableDialog {
 		this.jpCenter.add(this.help);
 		this.add(jpCenter, BorderLayout.CENTER);
 		
-		this.getHelpText();
+		this.setHelpText();;
 		this.getParsing();
 
 	}
@@ -176,7 +180,30 @@ public abstract class DialogEditByText extends EscapableDialog {
 		return this;
 	}
 	
-	public abstract void getHelpText();
+	public void setHelpText() {
+		String varOder = Txt.get("s_VAR_ORDER_HELP_PARSING");
+		String vars = "";
+		Set<LogicalModel> modelSet = this.epi.getEpitheliumGrid().getModelSet();
+		for (LogicalModel m : modelSet) {
+			vars += Project.getInstance().getInstance().getModelName(m);
+			vars += ":  ";
+			int size = 0;
+			for (NodeInfo var: m.getComponents()) {
+				vars += var.getNodeID();
+				vars += ",";
+			}
+
+			vars = vars.substring(0, vars.length() - 1);
+			vars += "<br>";
+		}
+		
+		String header = Txt.get("S_HELP_PARSING");
+		String unique = this.getHelpText();
+		this.helpText.setText(
+				"<html>" + varOder + "<br>" + vars + "<br>" + header + "<br>" + unique + "</html>");
+	}
+	
+	public abstract String getHelpText();
 	
 	public abstract void getParsing();
 	

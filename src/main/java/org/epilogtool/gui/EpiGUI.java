@@ -920,27 +920,37 @@ public class EpiGUI extends JFrame {
 		return tabIndex;
 	}
 	
-	public void alertEditByTextChanges(DialogEditByText dia) {
-		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
-		TreePath selPath = this.epiTreePanel.getSelectionPath();
-		DefaultMutableTreeNode node = this.epiTreePanel.getSelectedNode();
-		
-		this.openEpiTab(epi, selPath, node.toString());
-
-		int tabIndex = this.getTabIndexForPath(selPath);
-		EpiTabDefinitions epiTab = (EpiTabDefinitions) this.epiRightFrame.getComponentAt(tabIndex);
-		epiTab.notifyChange();
-		epiTab.buttonReset();
-		
-		dia.close();
-		JOptionPane.showMessageDialog(new JFrame(), node.toString() + " definitions were changed by text!");
-		validateGUI();
-	}
+//	public void alertEditByTextChanges(DialogEditByText dia) {
+////		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
+////		TreePath selPath = this.epiTreePanel.getSelectionPath();
+////		DefaultMutableTreeNode node = this.epiTreePanel.getSelectedNode();
+////		
+////		this.openEpiTab(epi, selPath, node.toString());
+////
+////		int tabIndex = this.getTabIndexForPath(selPath);
+////		EpiTabDefinitions epiTab = (EpiTabDefinitions) this.epiRightFrame.getComponentAt(tabIndex);
+////		
+////		// get tab. Close Tab
+////		
+////		epiTab.notifyChange();
+////		epiTab.buttonReset();
+////		
+//		dia.close();
+//		JOptionPane.showMessageDialog(new JFrame(), node.toString() + " definitions were changed by text!");
+//		validateGUI();
+//	}
 	
 	public void openEditByTextDialog() {
 		// get the epithelium
 		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
 		DefaultMutableTreeNode node = this.epiTreePanel.getSelectedNode();
+		
+		
+		TreePath selPath = this.epiTreePanel.getSelectionPath();
+		
+
+		int tabIndex = this.getTabIndexForPath(selPath);
+		this.epiTabCloseTab(tabIndex);
 		
 		DialogEditByText dia = null;
 		if (node.toString().equals(DialogEditByText.TAB_EPIUPDATING)) {
@@ -954,11 +964,12 @@ public class EpiGUI extends JFrame {
 		}
 		if (dia != null) {
 			Window win = SwingUtilities.getWindowAncestor(this);
-			JDialog dialog = new JDialog(win, "View \"" + node.toString() + "\" as text", ModalityType.APPLICATION_MODAL);
+			JDialog dialog = new JDialog(win, "Edit \"" + node.toString() + "\" as text", ModalityType.APPLICATION_MODAL);
 			dialog.getContentPane().add(dia);
 			dialog.pack();
 			dialog.setLocationRelativeTo(null);
 			dialog.setVisible(true);
+
 		}	
 	}
 

@@ -13,8 +13,8 @@ public class CellularModelUpdateEditByTextDialog extends DialogEditByText {
 	}
 	
 	@Override
-	public void getHelpText() {
-		this.helpText.setText(Txt.get("s_PRIORITIES_HELP_PARSING"));
+	public String getHelpText() {
+		return Txt.get("s_PRIORITIES_HELP_PARSING");
 	}
 
 	@Override

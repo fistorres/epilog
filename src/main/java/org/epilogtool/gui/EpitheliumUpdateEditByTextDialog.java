@@ -13,8 +13,8 @@ public class EpitheliumUpdateEditByTextDialog extends DialogEditByText {
 	}
 
 	@Override
-	public void getHelpText() {
-		this.helpText.setText(Txt.get("s_EPIUPDATING_HELP_PARSING"));
+	public String getHelpText() {
+		return Txt.get("s_EPIUPDATING_HELP_PARSING");
 
 	}
 

@@ -26,6 +26,7 @@ import org.epilogtool.core.Epithelium;
 import org.epilogtool.gui.menu.ByTextEpiTreePopupMenu;
 import org.epilogtool.gui.menu.EpiTreePopupMenu;
 import org.epilogtool.gui.tab.EpiTab;
+import org.epilogtool.gui.tab.EpiTabDefinitions;
 import org.epilogtool.project.Project;
 
 public class EpiTreePanel extends JPanel {
@@ -271,6 +272,7 @@ public class EpiTreePanel extends JPanel {
 			
 			if (node.isLeaf()) {
 				popupText.show(e.getComponent(), e.getX(), e.getY());
+				
 			} else {
 				popupmenu.show(e.getComponent(), e.getX(), e.getY());
 			}				

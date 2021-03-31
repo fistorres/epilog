@@ -14,8 +14,8 @@ public class IntegrationEditByTextDialog extends DialogEditByText {
 	}
 
 	@Override
-	public void getHelpText() {
-		this.helpText.setText(Txt.get("s_INTEGRATION_HELP_PARSING"));
+	public String getHelpText() {
+		return Txt.get("s_INTEGRATION_HELP_PARSING");
 
 	}
 

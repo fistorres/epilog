@@ -145,6 +145,11 @@ public class Project {
 	public Set<String> getModelNames() {
 		return this.projectFeatures.getModelNames();
 	}
+	
+	public String getModelName(LogicalModel m) {
+		return this.projectFeatures.getModelName(m);
+	}
+
 
 	
 	public Set<LogicalModel> getModels() {
