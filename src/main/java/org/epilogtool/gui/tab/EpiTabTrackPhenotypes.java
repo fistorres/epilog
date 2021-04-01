@@ -13,6 +13,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,9 +24,12 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -41,11 +46,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
@@ -229,32 +241,53 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 //		this.tablePane.repaint();
 //		this.tableControl.repaint();
 		this.center.repaint();
+		
+//		PhenoTable pt = this.model2Table.get(selModel);
+//      	System.out.println("model! " + pt.tableModel.getRowCount());
+//    	System.out.println("table! " + pt.jtable.getRowCount());
+    	
 	}
 	
 	private PhenoTable getTable(LogicalModel m) {
+		
 		if (!this.model2Table.containsKey(m)) {
 			PhenoTable phenoTable = new PhenoTable(m);
 			this.model2Table.put(m, phenoTable);
+			
+			if (this.userPhenotypes.getModelSet().contains(m)) {
+				Set<Phenotype> phenos = this.userPhenotypes.getPhenotypes(m);
+				for (Phenotype pheno : phenos)
+					phenoTable.addFullRow(pheno.getName(), pheno.getUse(),
+							pheno.getColor(), pheno.getPheno());
+				if (phenos.size() == 0)
+					phenoTable.addEmptyRow();
+
+			} else {
+				phenoTable.addEmptyRow();
+			}
 		}
 		return this.model2Table.get(m);
 	}
-	
 
 	@Override
 	public void buttonReset() {
-		// TODO Auto-generated method stub
-
+//		this.model2Table.clear();
+		this.userPhenotypes = this.epithelium.getPhenosToTrack().clone();
+		this.updatePhenoTable();
 	}
 
 	@Override
 	protected void buttonAccept() {
-		// TODO Auto-generated method stub
-
+		EpitheliumPhenotypes clone = this.userPhenotypes.clone();
+		this.epithelium.setPhenosToTrack(clone);
+		this.updatePhenoTable();
 	}
 
 	@Override
 	protected boolean isChanged() {
-		// TODO Auto-generated method stub
+			EpitheliumPhenotypes epiPhenos = this.epithelium.getPhenosToTrack();
+			if (!this.userPhenotypes.equals(epiPhenos))
+				return true;
 		return false;
 	}
 
@@ -266,7 +299,7 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 		for (LogicalModel m : modelList) {
 			if (this.userPhenotypes.getModelSet().contains(m)) {
 				// Already exists
-				newPHs.addPhenoArray(m, this.userPhenotypes.getPhenotypes(m));
+				newPHs.addPhenoSet(m, this.userPhenotypes.getPhenotypes(m));
 			} else {
 				// Adds a new one
 				newPHs.addModel(m);
@@ -275,17 +308,22 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 		this.userPhenotypes = newPHs;
 		this.jpNorthLeft.removeAll();
 		this.jpNorthLeft.add(this.newModelCombobox(modelList));
-		this.model2Table.clear();
 		this.updatePhenoTable();
-
 	}
 	
-	private class PhenoTable {
+	private class PhenoTable implements TableModelListener, PropertyChangeListener{
 		
 		private LogicalModel model;
 		private String[] colnames;
 		private JTable jtable;
 		private ModelTable tableModel;
+		private boolean changed;
+		
+		
+		private int editingRow;
+		private int editingCol;
+		private Object editingOldValue;
+		
 		
 		PhenoTable(LogicalModel model) {
 			this.model = model;
@@ -298,8 +336,10 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 
 			// Get the components names for the new columns
 			int i = 3;
-			for (NodeInfo node : this.model.getComponents())
+			for (NodeInfo node : this.model.getComponents()) {
 				this.colnames[i] = node.getNodeID();
+				i++;
+			}
 
 			// create new Table
 			this.tableModel = new ModelTable(this.colnames);
@@ -311,29 +351,21 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			    {
 			        JTable source = (JTable)e.getSource();
 			        int row = source.rowAtPoint( e.getPoint() );
-
+					tpc.setChanged();
 			        if (row == jtable.getRowCount() - 1) 
 			        	addEmptyRow();
 			   }});
+			this.jtable.addPropertyChangeListener(this);
 			
+					
 			TableColumn colorCol = this.jtable.getColumnModel().getColumn(2);
 			colorCol.setCellEditor(new ColorEditor());
 			colorCol.setCellRenderer(new ColorRenderer());
 			
 			// Set MAX and MIN values for each component and set editor
-			int varC = 3;
-			for (NodeInfo var : this.model.getComponents()) {
-				JComboBox<String> jcombob = new JComboBox<String>();
-				jcombob.addItem("*");
-				for (byte vl = 0; vl <= var.getMax(); vl++)
-					jcombob.addItem("" + vl);
-				TableColumn varCol = this.jtable.getColumnModel().getColumn(varC);
-				varCol.setCellEditor(new DefaultCellEditor(jcombob));
-				varC ++;
-			}
+			this.setNodeValues();
 			
-			// start new row
-			this.addEmptyRow();
+			this.tableModel.addTableModelListener(this);
 			
 		}
 		
@@ -350,11 +382,26 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			int[] rows = this.jtable.getSelectedRows();
 			if (rows.length > 0 &&  this.jtable.getRowCount() > 1) {
 				ArrayUtils.reverse(rows);
-				for (int row : rows)
-					this.tableModel.removeRow(row);
-			}
+				for (int row : rows) {
+					// remove from model
+			        int modelIndex = this.jtable.convertRowIndexToModel(row); 
+					this.tableModel.removeRow(modelIndex);
+					// remove from userPhenotypes
+					Vector rowData = this.tableModel.getDataVector().elementAt(row);
+		        	String phenotype = "";
+//		        	System.out.println("model " + this.tableModel.getRowCount());
+//		        	System.out.println("table " + this.jtable.getRowCount());
+
+		        	for (int i = 3; i < rowData.size(); i++)
+		        		phenotype += String.valueOf(rowData.get(i));
+			        
+					userPhenotypes.removePhenotype(selModel, (String) rowData.get(0),
+			        		(Boolean) rowData.get(1), (Color) rowData.get(2), phenotype);
+				}
+				tpc.setChanged();
+		    }
 		}
-			
+		
 		public void clonePheno() {
 			int row = this.jtable.getSelectedRow();
 //				String[] names = new String[this.tableModel.getDataVector().size()];
@@ -377,7 +424,6 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 				newClone.add(0,name);
 				
 				this.tableModel.insertRow(row + 1, newClone);
-
 			}
 		}
 			
@@ -398,35 +444,68 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			tempA[2] = color;
 				
 			char[] phenotype = pheno.toCharArray();
-			for (int i = 3, e = 0; i < phenotype.length; i++, e++)
-				tempA[i] = phenotype[e];
+			for (int i = 3, e = 0; e < phenotype.length; i++, e++)
+				tempA[i] = (char) phenotype[e];
 			
 			this.tableModel.addRow(tempA);
-
-				
 		}
 			
 		public void addEmptyRow() {
 			Object[] tempA = new Object[this.colnames.length];
-			tempA[0] = "";
+			tempA[0] = "Phenotype_1";
 			tempA[1] = false;
 			tempA[2] = Color.black;
 				
+			char temp = '*';
 			for (int i = 3; i < this.tableModel.getColumnCount(); i++) 
-				tempA[i] = "";
+				tempA[i] = temp;
 				
 			this.tableModel.addRow(tempA);
 		}
-
 		
-		public JComboBox getNodeValues() {
-			return null;
+		public void setNodeValues() {
+			int varC = 3;
+			for (NodeInfo var : this.model.getComponents()) {
+				JComboBox<String> jcombob = new JComboBox<String>();
+				jcombob.addItem("*");
+				for (byte vl = 0; vl <= var.getMax(); vl++)
+					jcombob.addItem("" + vl);
+				TableColumn varCol = this.jtable.getColumnModel().getColumn(varC);
+				varCol.setCellEditor(new DefaultCellEditor(jcombob));
+				varC ++;
+			}
+		}
+		
+		@Override
+		public void tableChanged(TableModelEvent e) {
+			int row = e.getFirstRow();
+	        int column = e.getColumn();
+	        this.changed = false;
+	        
+	        
+	        TableModel model = this.tableModel;
+	        if (model.getRowCount() != 0 && row != -1 && column != -1) {
+	        	Vector rowData = this.tableModel.getDataVector().elementAt(row);
+	        	for (Object par : rowData) {
+	        		if (par  == null) {
+	        			break;
+	        		}
+	        	}
+	        	String phenotype = "";
+	        	for (int i = 3; i < rowData.size(); i++)
+	        		phenotype += String.valueOf(rowData.get(i));
+	        	
+		        userPhenotypes.addPhenotype(selModel, (String) rowData.get(0) ,
+		        		(Boolean) rowData.get(1), (Color) rowData.get(2), phenotype);
+	        }
 		}
 	
-		private class ModelTable extends DefaultTableModel {
+		private class ModelTable extends DefaultTableModel{
 			public ModelTable(String[] colnames) {
 				super(colnames, 0);
 			}
+
+		
 
 			@Override
 			public Class<?> getColumnClass(int columnIndex) {
@@ -442,12 +521,14 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 					clazz = Color.class;
 	        		break;
 				default:
+					// ??
 					clazz = JComboBox.class;
 					break;
 				}
 				return clazz;
 			}
 		}
+		
 		public class ColorEditor extends AbstractCellEditor 
 			implements TableCellEditor,ActionListener {
 
@@ -523,5 +604,25 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			}
 		}
 		
+//
+		@Override
+		public void propertyChange(PropertyChangeEvent e) {
+//		//  A cell has started/stopped editing
+			if ("tableCellEditor".equals(e.getPropertyName())) {
+				System.out.println("heeere");
+
+			
+				if (this.jtable.isEditing()) {
+					this.editingRow = this.jtable.convertRowIndexToModel(this.jtable.getEditingRow());
+					this.editingCol = this.jtable.convertColumnIndexToModel(this.jtable.getEditingColumn());
+					this.editingOldValue = this.jtable.getModel().getValueAt(this.editingRow,
+							this.editingCol);
+				} else {
+					
+				}
+			}
+//			
+		}
+
 	}
 }

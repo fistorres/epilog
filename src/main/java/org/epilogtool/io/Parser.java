@@ -636,7 +636,7 @@ public class Parser {
 				LogicalModel m = Project.getInstance().getModel(model);
 			 	Integer modelInt = model2Key.get(model);
 				if (epi.hasModel(m)) {
-					ArrayList<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
+					Set<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
 					for (Phenotype pheno : phenos)
 						w.print("PH " + modelInt + " " + pheno.getName() + " " + pheno.getUse() + " " + 
 					 ColorUtils.getColorCode(pheno.getColor()) + " " + pheno.getPheno());
@@ -658,7 +658,7 @@ public class Parser {
 		for (String model : models) {
 			LogicalModel m = Project.getInstance().getModel(model);
 			if (epi.hasModel(m)) {
-				ArrayList<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
+				Set<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
 				for (Phenotype pheno : phenos)
 				 text += "PH " + model + " " + pheno.getName() + " " + pheno.getUse() + " " + 
 				 ColorUtils.getColorCode(pheno.getColor()) + " " + pheno.getPheno();

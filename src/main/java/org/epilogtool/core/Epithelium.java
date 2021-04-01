@@ -201,8 +201,8 @@ public class Epithelium {
 	public void addPheno(LogicalModel m, String name, Boolean use, Color color, String pheno) {
 		this.phenotypesTrack.addPhenotype(m, name, use, color, pheno);
 	}
-	public void addPhenosArray(LogicalModel m, ArrayList<Phenotype> phenoArray) {
-		this.phenotypesTrack.addPhenoArray(m, phenoArray);
+	public void addPhenosArray(LogicalModel m, Set<Phenotype> phenoArray) {
+		this.phenotypesTrack.addPhenoSet(m, phenoArray);
 	}
 
 	public void setGridWithComponentValue(String nodeID, byte value, List<Tuple2D<Integer>> lTuples) {

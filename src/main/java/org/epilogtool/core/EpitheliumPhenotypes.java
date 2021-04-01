@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,14 +17,14 @@ import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
 
 public class EpitheliumPhenotypes {
 	
-	public Map<LogicalModel,ArrayList<Phenotype>> phenotypesToTrack;
+	public Map<LogicalModel,Set<Phenotype>> phenotypesToTrack;
 	
 	public EpitheliumPhenotypes() {
-		this.phenotypesToTrack = new HashMap<LogicalModel, ArrayList<Phenotype>>();
+		this.phenotypesToTrack = new HashMap<LogicalModel, Set<Phenotype>>();
 	}
 	
 	public void addModel(LogicalModel model) {
-		this.phenotypesToTrack.put(model, new ArrayList<Phenotype>());
+		this.phenotypesToTrack.put(model, new HashSet<Phenotype>());
 		
 	}
 
@@ -32,7 +33,7 @@ public class EpitheliumPhenotypes {
 			this.phenotypesToTrack.remove(m);
 	}
 
-	public ArrayList<Phenotype> getPhenotypes(LogicalModel m) {
+	public Set<Phenotype> getPhenotypes(LogicalModel m) {
 		return this.phenotypesToTrack.get(m);
 	}
 
@@ -40,15 +41,25 @@ public class EpitheliumPhenotypes {
 		if (!this.phenotypesToTrack.containsKey(model))
 			this.addModel(model);
 		
-		ArrayList<Phenotype> temp = this.phenotypesToTrack.get(model);
+		Set<Phenotype> temp = this.phenotypesToTrack.get(model);
 		temp.add(new Phenotype(color, name, pheno, use));
 
 	}
 	
-	public void addPhenoArray(LogicalModel model, ArrayList<Phenotype> phenos) {
+	public void removePhenotype(LogicalModel model, String name, Boolean use, Color color, String pheno) {
+		if (!this.phenotypesToTrack.containsKey(model))
+			return;
+		
+		Set<Phenotype> temp = this.phenotypesToTrack.get(model);
+		Phenotype phenotype = new Phenotype(color, name, pheno, use);
+		if (temp.contains(phenotype))
+			temp.remove(phenotype);
+	}
+	
+	public void addPhenoSet(LogicalModel model, Set<Phenotype> phenos) {
 		if (!this.phenotypesToTrack.containsKey(model))
 			this.addModel(model);
-		ArrayList<Phenotype> temp = this.phenotypesToTrack.get(model);
+		Set<Phenotype> temp = this.phenotypesToTrack.get(model);
 		temp.addAll(phenos);
 	}
 
@@ -60,8 +71,12 @@ public class EpitheliumPhenotypes {
 		EpitheliumPhenotypes newPhenos = new EpitheliumPhenotypes();
 		
 		for (LogicalModel m : this.phenotypesToTrack.keySet()) {
-			ArrayList<Phenotype> phenosClone = (ArrayList<Phenotype>) newPhenos.getPhenotypes(m).clone();
-			newPhenos.addPhenoArray(m, phenosClone);
+			Set<Phenotype> phenosClone = new HashSet<Phenotype>();
+			for (Phenotype pheno : this.phenotypesToTrack.get(m))
+				phenosClone.add(pheno.clone());
+			
+			if (phenosClone != null) 
+				newPhenos.addPhenoSet(m, phenosClone);
 		}
 		return newPhenos;
 	}
@@ -116,19 +131,21 @@ public class EpitheliumPhenotypes {
 			return this.use;
 		}
 		
+		@Override
 		public Phenotype clone() {
 			return new Phenotype(this.phenoColor, this.name, this.pheno, this.use);
 		}
 		
+		@Override
 		public boolean equals(Object o) {
 			Phenotype outPheno = (Phenotype) o;
-			if (outPheno.phenoColor != this.phenoColor)
-				return false;
-			if (outPheno.name != this.name)
-				return false;
-			if (outPheno.pheno != this.pheno)
-				return false;
-			return true;
+			if (outPheno.pheno.equals(this.pheno))
+				return true;
+			return false;
 		}
+		@Override
+		public int hashCode() {
+	        return Objects.hashCode(this.pheno);
+	    }
 	}
 }
