@@ -24,7 +24,7 @@ public class CellularModelUpdateEditByTextDialog extends DialogEditByText {
 	}
 
 	@Override
-	public boolean parse(String[] textarea, boolean save) throws NumberFormatException, IOException {
+	public boolean parse(String textarea, boolean save) throws NumberFormatException, IOException {
 		return Parser.parseCelullarUpdateMode(epi, textarea, save);
 	}
 

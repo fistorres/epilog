@@ -24,6 +24,8 @@ public class DialogEditPreferences extends EscapableDialog {
 	private JPanel panelSimulation;
 	private JComboBox<EnumNodePercent> jcbGridNodePercent;
 	private JComboBox<EnumOrderNodes> jcbOrderedComponents;
+	private JComboBox<EnumStatePercent> jcbGridStatePercent;
+
 
 	private boolean bIsOK;
 
@@ -44,9 +46,24 @@ public class DialogEditPreferences extends EscapableDialog {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(3, 3, 3, 3);
 
-		// Node percentage in grid
+		// State percentage in grid
 		c.gridx = 0;
 		c.gridy = 0;
+		this.panelSimulation.add(new JLabel(EnumStatePercent.title()), c);
+		this.jcbGridStatePercent = new JComboBox<EnumStatePercent>(
+				new EnumStatePercent[] { EnumStatePercent.YES, EnumStatePercent.NO });
+		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
+		for (int i = 0; i < this.jcbGridStatePercent.getItemCount(); i++) {
+			if (statePercent != null && statePercent.equals(this.jcbGridNodePercent.getItemAt(i).toString()))
+				this.jcbGridStatePercent.setSelectedIndex(i);
+			}
+		c.gridx = 1;
+		c.gridy = 0;
+		this.panelSimulation.add(this.jcbGridStatePercent, c);
+		
+		// Node percentage in grid
+		c.gridx = 0;
+		c.gridy = 1;
 		this.panelSimulation.add(new JLabel(EnumNodePercent.title()), c);
 		this.jcbGridNodePercent = new JComboBox<EnumNodePercent>(
 				new EnumNodePercent[] { EnumNodePercent.YES, EnumNodePercent.NO });
@@ -56,12 +73,12 @@ public class DialogEditPreferences extends EscapableDialog {
 				this.jcbGridNodePercent.setSelectedIndex(i);
 		}
 		c.gridx = 1;
-		c.gridy = 0;
+		c.gridy = 1;
 		this.panelSimulation.add(this.jcbGridNodePercent, c);
 
 		// Alphabetical Ordered Nodes
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		this.panelSimulation.add(new JLabel(EnumOrderNodes.title()), c);
 		this.jcbOrderedComponents = new JComboBox<EnumOrderNodes>(
 				new EnumOrderNodes[] { EnumOrderNodes.ORIGINAL, EnumOrderNodes.ALPHA });
@@ -71,7 +88,7 @@ public class DialogEditPreferences extends EscapableDialog {
 				this.jcbOrderedComponents.setSelectedIndex(i);
 		}
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 2;
 		this.panelSimulation.add(this.jcbOrderedComponents, c);
 
 		// Bottom Panel
@@ -112,6 +129,11 @@ public class DialogEditPreferences extends EscapableDialog {
 	public String getOptionOrderedNodes() {
 		return ((EnumOrderNodes) this.jcbOrderedComponents.getSelectedItem()).toString();
 	}
+	
+	public String getOptionStatePercent() {
+		return ((EnumStatePercent) this.jcbGridStatePercent.getSelectedItem()).toString();
+	}
+	
 
 	@Override
 	public void focusComponentOnLoad() {

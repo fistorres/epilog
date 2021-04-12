@@ -50,6 +50,7 @@ import org.epilogtool.gui.EpiGUI.TabChangeNotifyProj;
 import org.epilogtool.gui.color.ColorUtils;
 import org.epilogtool.gui.dialog.EnumNodePercent;
 import org.epilogtool.gui.dialog.EnumOrderNodes;
+import org.epilogtool.gui.dialog.EnumStatePercent;
 import org.epilogtool.gui.widgets.GridInformation;
 import org.epilogtool.gui.widgets.JComboCheckBox;
 import org.epilogtool.gui.widgets.VisualGridSimulation;
@@ -271,8 +272,40 @@ public class EpiTabSimulation extends EpiTabTools {
 				}
 			}
 		});
-
 		jpButtonsR.add(jbSaveAll);
+
+		
+		// 
+		JButton jbPhenoStats = new JButton("Save all phenos");
+//		jbStats.setToolTipText(Txt.get(""));
+		jbPhenoStats.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					saveEpiGridPhenos2File(false);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		jpButtonsR.add(jbPhenoStats);
+
+		// Button to save all simulated grid images
+		JButton jbAllStats = new JButton("Save all stats");
+//		jbSaveAll.setToolTipText(Txt.get("s_TAB_SIM_SAVE_ALL"));
+		jbAllStats.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					saveEpiGridPhenos2File(true);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		jpButtonsR.add(jbAllStats);
 
 		// jpButtons.setPreferredSize(new
 		// Dimension(jpButtons.getPreferredSize().width+110,
@@ -715,6 +748,8 @@ public class EpiTabSimulation extends EpiTabTools {
 			}
 		}
 	}
+	
+	
 
 	// get current simulation step
 	// private void saveEpiGrid2File() {
@@ -744,6 +779,60 @@ public class EpiTabSimulation extends EpiTabTools {
 	// }
 	// }
 
+	public void saveEpiGridPhenos2File(boolean state) throws IOException {
+		// declare JFileChooser
+		JFileChooser fileChooser = new JFileChooser();
+
+		FileNameExtensionFilter filter = null;
+		filter = new FileNameExtensionFilter("xlsx files", "xlsx");
+
+		fileChooser.setFileFilter(filter);
+		if (Project.getInstance().getFilenamePEPS() != null) {
+			fileChooser.setCurrentDirectory(new java.io.File(Project.getInstance().getFilenamePEPS()));
+		}
+
+		// let the user choose the destination file
+		if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+
+			// indicates whether the user still wants to save the picture
+			boolean doExport = true; 
+
+			// indicates whether to override an already existing file
+			boolean overrideExistingFile = false;
+
+			// get destination file
+			String filename = fileChooser.getSelectedFile().getAbsolutePath();
+			filename += (filename.endsWith("." + "xlsx") ? "" : "." + "xlsx");
+			File destinationFile = new File(filename);
+
+			// check if file already exists
+			while (doExport && destinationFile.exists() && !overrideExistingFile) {
+				// let the user decide whether to override the existing file
+				overrideExistingFile = (JOptionPane.showConfirmDialog(this, "Replace file?", "Export settings",
+						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
+
+				// let the user choose another file if the existing file shall not be overridden
+				if (!overrideExistingFile) {
+					if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+						// get new destination file
+						filename = fileChooser.getSelectedFile().getAbsolutePath();
+						filename += (filename.endsWith("." + "xlsx") ? "" : "." + "xlsx");
+						destinationFile = new File(filename);
+
+					} else {
+						// seems like the user does not want to export the settings any longer
+						doExport = false;
+					}
+				}
+			}
+
+			if (doExport) {
+				FileIO.writeSimStats2File(filename, this.simulation, this.iCurrSimIter, state);
+			
+			}
+		}
+	}
+	
 	private void cloneEpiWithCurrGrid() {
 		this.simEpiClone.cloneEpithelium(this.epithelium, this.simulation.getGridAt(this.iCurrSimIter));
 	}
@@ -769,10 +858,18 @@ public class EpiTabSimulation extends EpiTabTools {
 		this.jbRewind.setEnabled(true);
 		this.jbBack.setEnabled(true);
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
+		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
+
 
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
 			nextGrid.updateNodeValueCounts();
 		}
+		
+		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
+			nextGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
+		}
+
+			
 		this.updateComponentList(this.jccbSBML.getSelectedItems());
 		// Re-Paint
 		this.repaint();
@@ -791,8 +888,14 @@ public class EpiTabSimulation extends EpiTabTools {
 		this.jbRewind.setEnabled(true);
 		this.jbBack.setEnabled(true);
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
+		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
+
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
 			nextGrid.updateNodeValueCounts();
+		}
+		
+		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
+			nextGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
 		}
 		this.updateComponentList(this.jccbSBML.getSelectedItems());
 		// Re-Paint
@@ -810,8 +913,15 @@ public class EpiTabSimulation extends EpiTabTools {
 		this.jbForward.setEnabled(true);
 		this.jbFastFwr.setEnabled(true);
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
+		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
+
+
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
 			firstGrid.updateNodeValueCounts();
+		}
+		
+		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
+			firstGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
 		}
 
 		this.updateComponentList(this.jccbSBML.getSelectedItems());
@@ -837,8 +947,15 @@ public class EpiTabSimulation extends EpiTabTools {
 		this.jbForward.setEnabled(true);
 		this.jbFastFwr.setEnabled(true);
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
+		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
+
+
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
 			prevGrid.updateNodeValueCounts();
+		}
+		
+		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
+			prevGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
 		}
 		this.updateComponentList(this.jccbSBML.getSelectedItems());
 		// Re-Paint

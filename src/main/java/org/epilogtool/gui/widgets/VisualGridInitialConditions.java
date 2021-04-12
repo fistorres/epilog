@@ -108,7 +108,9 @@ public class VisualGridInitialConditions extends VisualGridDefinitions {
 		});
 	}
 	
-public void updateNodePercentages() {
+	
+
+	public void updateNodePercentages() {
 		
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
@@ -117,7 +119,9 @@ public void updateNodePercentages() {
 			jlb.setText(this.epiGrid.getPercentage(nodeID));
 			jlb.paintComponents(this.getGraphics());
 		}
-	}}
+		}
+	}
+	
 	public String updateNodePercentages (String nodeID) {
 		updateNodePercentages();
 			return this.epiGrid.getPercentage(nodeID);

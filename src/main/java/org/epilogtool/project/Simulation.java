@@ -67,6 +67,7 @@ public class Simulation {
 		this.gridHistory = new ArrayList<EpitheliumGrid>();
 		EpitheliumGrid firstGrid = this.epithelium.getEpitheliumGrid().clone();
 		firstGrid.updateNodeValueCounts();
+		firstGrid.updateStateCounts(e.getAllPhenotypes());
 		firstGrid.restrictGridWithPerturbations();
 		this.gridHistory.add(firstGrid);
 		// Grid Hash History

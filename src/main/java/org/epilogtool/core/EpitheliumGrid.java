@@ -14,6 +14,7 @@ import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
 import org.epilogtool.common.Tuple2D;
+import org.epilogtool.core.EpitheliumPhenotypes.Phenotype;
 import org.epilogtool.core.topology.RollOver;
 import org.epilogtool.core.topology.Topology;
 import org.epilogtool.project.Project;
@@ -25,14 +26,25 @@ public class EpitheliumGrid {
 	private Set<LogicalModel> modelSet;
 	private Map<String, Map<Byte, Integer>> compCounts;
 	private Map<String, Map<Byte, Float>> compPercents;
+	private Map<LogicalModel, Map<String, Integer>> stateCounts;
+	private Map<LogicalModel,Map<String, Float>> statePercents;
+	private Map<LogicalModel,Map<String, Integer>> phenoCounts;
+	private Map<LogicalModel,Map<String, Float>> phenoPercents;
+	
 
 	private EpitheliumGrid(EpitheliumCell[][] gridEpiCell, Topology topology, Set<LogicalModel> modelSet,
-			Map<String, Map<Byte, Integer>> compCounts, Map<String, Map<Byte, Float>> compPercents) {
+			Map<String, Map<Byte, Integer>> compCounts, Map<String, Map<Byte, Float>> compPercents,
+			Map<LogicalModel, Map<String, Integer>> stateCounts, Map<LogicalModel,Map<String, Float>> statePercents, Map<LogicalModel, Map<String, Integer>> phenoCounts,
+			Map<LogicalModel, Map<String, Float>> phenoPercents) {
 		this.gridEpiCell = gridEpiCell;
 		this.topology = topology;
 		this.modelSet = modelSet;
 		this.compCounts = compCounts;
 		this.compPercents = compPercents;
+		this.stateCounts = stateCounts;
+		this.statePercents = statePercents;
+		this.phenoCounts = phenoCounts;
+		this.phenoPercents = phenoPercents;
 	}
 
 	public void editEpitheliumGrid(int gridX, int gridY, String topologyID, RollOver rollover)
@@ -70,6 +82,10 @@ public class EpitheliumGrid {
 		this.modelSet.add(m);
 		this.compCounts = new HashMap<String, Map<Byte, Integer>>();
 		this.compPercents = new HashMap<String, Map<Byte, Float>>();// ptgm
+		this.stateCounts = new HashMap<LogicalModel, Map<String, Integer>>();
+		this.statePercents = new HashMap<LogicalModel, Map<String, Float>>();
+		this.phenoCounts = new HashMap<LogicalModel, Map<String, Integer>>();
+		this.phenoPercents = new HashMap<LogicalModel, Map<String, Float>>();
 	}
 
 	private void setTopology(String topologyID, int gridX, int gridY, RollOver rollover)
@@ -324,7 +340,14 @@ public class EpitheliumGrid {
 		Set<LogicalModel> newModelSet = new HashSet<LogicalModel>(this.modelSet);
 		Map<String, Map<Byte, Integer>> newCompCounts = new HashMap<String, Map<Byte, Integer>>(this.compCounts);
 		Map<String, Map<Byte, Float>> newCompPercents = new HashMap<String, Map<Byte, Float>>(this.compPercents);
-		return new EpitheliumGrid(newGrid, newTop, newModelSet, newCompCounts, newCompPercents);
+
+		Map<LogicalModel, Map<String, Integer>> newStateCounts = new HashMap<LogicalModel, Map<String, Integer>>();
+		Map<LogicalModel, Map<String, Float>> newStatePercents = new HashMap<LogicalModel, Map<String, Float>>();
+
+		Map<LogicalModel, Map<String, Integer>> newPhenoCounts = new HashMap<LogicalModel, Map<String, Integer>>();
+		Map<LogicalModel, Map<String, Float>> newPhenoPercents = new HashMap<LogicalModel, Map<String, Float>>();
+		return new EpitheliumGrid(newGrid, newTop, newModelSet, newCompCounts, newCompPercents, newStateCounts,
+				newStatePercents, newPhenoCounts, newPhenoPercents);
 	}
 
 	public String getPercentage(String nodeID) {
@@ -348,6 +371,69 @@ public class EpitheliumGrid {
 		int nCells = this.getX() * this.getY();
 		float percentage = (count / nCells) * 100;
 		return percentage;
+	}
+	
+	public Map<LogicalModel, Map<String, Float>> getStatePercents() {
+		return this.statePercents;
+	}
+	
+	public Map<LogicalModel, Map<String, Float>> getPhenoPercents() {
+		return this.phenoPercents;
+	}
+	
+	public void updateStateCounts(Map<LogicalModel,Set<Phenotype>>phenotypes) {
+        
+		for (int x = 0; x < this.getX(); x++) {
+			for (int y = 0; y < this.getY(); y++) {
+				byte[] cellState = this.getCellState(x, y);
+				LogicalModel model = this.getModel(x, y);
+				if (!phenotypes.containsKey(model))
+					continue;
+				Set<Phenotype> phenoList = new HashSet<Phenotype>(phenotypes.get(model));
+				
+				if (!this.stateCounts.containsKey(model)) {
+					this.stateCounts.put(model, new HashMap<String, Integer>());
+					this.phenoCounts.put(model, new HashMap<String, Integer>());
+				}
+				
+				for (Phenotype pheno : phenoList) {
+					if (!this.stateCounts.get(model).containsKey(pheno.getPheno())) 
+						this.stateCounts.get(model).put(pheno.getPheno(), 0);
+					if (!this.phenoCounts.get(model).containsKey(pheno.getName()))
+						this.phenoCounts.get(model).put(pheno.getName(), 0);
+			
+					if (pheno.match(cellState)) {
+						this.stateCounts.get(model).put(pheno.getPheno(),
+								this.stateCounts.get(model).get(pheno.getPheno())+1);
+						this.phenoCounts.get(model).put(pheno.getName(), this.phenoCounts.get(model).get(pheno.getName()) + 1);
+					}
+						
+				}
+			}
+		}
+		
+		this.statePercents.clear();
+		int nCells = this.getX() * this.getY();
+		for (LogicalModel model : this.stateCounts.keySet()) {
+			this.statePercents.put(model, new HashMap<String, Float>());
+			for (String phenoState : this.stateCounts.get(model).keySet()) {
+				float count = this.stateCounts.get(model).get(phenoState);
+				float percent = (count / nCells) * 100;
+				this.statePercents.get(model).put(phenoState, percent);
+				}
+		}
+		
+		this.phenoPercents.clear();
+		for (LogicalModel model : this.phenoCounts.keySet()) {
+			this.phenoPercents.put(model, new HashMap<String, Float>());
+
+			for (String phenoName : this.phenoCounts.get(model).keySet()) {
+				float count = this.phenoCounts.get(model).get(phenoName);
+				float percent = (count / nCells) * 100;
+				this.phenoPercents.get(model).put(phenoName, percent);
+			}
+		}
+
 	}
 
 	public void updateNodeValueCounts() {

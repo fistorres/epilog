@@ -25,7 +25,7 @@ public class IntegrationEditByTextDialog extends DialogEditByText {
 	}
 
 	@Override
-	public boolean parse(String[] textarea, boolean save) throws NumberFormatException, IOException {
+	public boolean parse(String textarea, boolean save) throws NumberFormatException, IOException {
 		return Parser.parseInputDef(epi, textarea, save);
 	}
 

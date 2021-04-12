@@ -1,19 +1,15 @@
 package org.epilogtool.core;
 
 import java.awt.Color;
-import java.awt.List;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.colomoto.biolqm.LogicalModel;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
 
 public class EpitheliumPhenotypes {
 	
@@ -36,13 +32,34 @@ public class EpitheliumPhenotypes {
 	public Set<Phenotype> getPhenotypes(LogicalModel m) {
 		return this.phenotypesToTrack.get(m);
 	}
+	
+	public Map<LogicalModel,Set<Phenotype>> getPhenotypes() {
+		return this.phenotypesToTrack;
+	}
 
 	public void addPhenotype(LogicalModel model, String name, Boolean use, Color color, String pheno) {
 		if (!this.phenotypesToTrack.containsKey(model))
 			this.addModel(model);
 		
 		Set<Phenotype> temp = this.phenotypesToTrack.get(model);
-		temp.add(new Phenotype(color, name, pheno, use));
+		
+		boolean valid = true;
+		for (Phenotype ph : temp) {
+			if (ph.pheno.equals(pheno)) {
+				valid = false;
+				break;
+			}
+		}
+			if (valid)
+				temp.add(new Phenotype(color, name, pheno, use));
+	}
+	
+	public void addPhenotype(LogicalModel model, Phenotype pheno) {
+		if (!this.phenotypesToTrack.containsKey(model))
+			this.addModel(model);
+		
+		Set<Phenotype> temp = this.phenotypesToTrack.get(model);
+		temp.add(pheno);
 
 	}
 	
@@ -99,7 +116,7 @@ public class EpitheliumPhenotypes {
 	}
 	
 	
-	public class Phenotype {
+	public class Phenotype implements Comparable<Phenotype> {
 		
 		private Color phenoColor;
 		private Boolean use;
@@ -114,8 +131,13 @@ public class EpitheliumPhenotypes {
 		}
 		
 		public boolean match(byte[] state) {
-			String stateS = Arrays.toString(state);
-			return Pattern.matches(pheno, stateS);
+			
+			String[] stateArray = new String[state.length];
+			for (int i = 0; i < state.length; i++)
+				stateArray[i] = "" + state[i];
+			
+			String stateS = String.join("", stateArray);
+			return Pattern.matches(pheno.replace("*", "."), stateS);
 		}
 		
 		public Color getColor() {
@@ -132,6 +154,11 @@ public class EpitheliumPhenotypes {
 		}
 		
 		@Override
+		public int compareTo(Phenotype other) {
+			return (this.name.compareTo(other.name));
+		 }
+		
+		@Override
 		public Phenotype clone() {
 			return new Phenotype(this.phenoColor, this.name, this.pheno, this.use);
 		}
@@ -139,13 +166,22 @@ public class EpitheliumPhenotypes {
 		@Override
 		public boolean equals(Object o) {
 			Phenotype outPheno = (Phenotype) o;
-			if (outPheno.pheno.equals(this.pheno))
-				return true;
+			if (!outPheno.phenoColor.equals(this.phenoColor))
+				return false;
+			if (!outPheno.name.equals(this.name))
+				return false;
+			if (!outPheno.pheno.equals(this.pheno))
+				return false;
+			if (!outPheno.use.equals(this.use))
+				return false;
 			return false;
 		}
 		@Override
 		public int hashCode() {
-	        return Objects.hashCode(this.pheno);
+	        return Objects.hashCode(this.phenoColor) + 
+	        		Objects.hashCode(this.name) +
+	        		Objects.hashCode(this.pheno) +
+	        		Objects.hashCode(this.use);
 	    }
 	}
 }

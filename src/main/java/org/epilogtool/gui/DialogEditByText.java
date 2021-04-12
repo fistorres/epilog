@@ -104,10 +104,13 @@ public abstract class DialogEditByText extends EscapableDialog {
 		this.applyAndClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			try {
-				parse(def.getText().split("\\n"), true);
+				helpParse(def.getText(), true);
 //				EpiGUI.getInstance().alertEditByTextChanges(getThis());
 				close();
-			} catch (NumberFormatException | IOException e1) {
+			} catch (NumberFormatException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -224,14 +227,20 @@ public abstract class DialogEditByText extends EscapableDialog {
 	
 	private void validateTextField() throws NumberFormatException, IOException {
 		this.parseOK = false;
-		if (this.parse(this.def.getText().split("\\n"), false)) 
+		if (this.parse(this.def.getText(), false)) 
 			this.parseOK = true;
 		this.def.setBackground(this.parseOK ? Color.WHITE
 				: ColorUtils.LIGHT_RED);
 		this.validConfig();
 	}
 	
-	public abstract boolean parse(String[] textarea, boolean save) throws NumberFormatException, IOException;
+	public void helpParse(String textarea, boolean save) throws NumberFormatException, IOException {
+		for (String line : textarea.split("\\n"))
+			parse(line, save);
+	}
+	
+	
+	public abstract boolean parse(String textarea, boolean save) throws NumberFormatException, IOException;
 		
 	public void close() {
 		this.dispose();

@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -192,6 +193,13 @@ public class Epithelium {
 	
 	public EpitheliumPhenotypes getPhenosToTrack() {
 		return this.phenotypesTrack;
+	}
+	
+	public Map<LogicalModel, Set<Phenotype>> getAllPhenotypes() {
+		return this.phenotypesTrack.getPhenotypes();
+	}
+	public Set<Phenotype> getPhenosToTrack(LogicalModel m) {
+		return this.phenotypesTrack.getPhenotypes(m);
 	}
 	
 	public void setPhenosToTrack(EpitheliumPhenotypes phenos) {

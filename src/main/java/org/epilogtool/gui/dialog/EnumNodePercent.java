@@ -3,6 +3,7 @@ package org.epilogtool.gui.dialog;
 import org.epilogtool.common.Txt;
 
 public enum EnumNodePercent {
+	
 	YES(Txt.get("s_ENUM_NODEPERCENT_Y")), NO(Txt.get("s_ENUM_NODEPERCENT_N"));
 	private String desc;
 

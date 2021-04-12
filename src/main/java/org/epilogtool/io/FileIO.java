@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,18 +13,29 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.io.LogicalModelFormat;
 import org.colomoto.biolqm.io.sbml.SBMLFormat;
 import org.epilogtool.OptionStore;
+import org.epilogtool.core.EpitheliumGrid;
 import org.epilogtool.notification.NotificationManager;
 import org.epilogtool.project.Project;
+import org.epilogtool.project.Simulation;
 
 public class FileIO {
 
@@ -247,4 +259,57 @@ public class FileIO {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void writeSimStats2File(String file, Simulation simulation, int iteration, boolean state) 
+			throws IOException {
+        Workbook wb = new HSSFWorkbook();
+  
+        OutputStream fileOut = new FileOutputStream(file);
+          
+        for(LogicalModel model : Project.getInstance().getModels()) {
+        	Sheet sheet = wb.createSheet(Project.getInstance().getModelName(model));
+        	
+        	EpitheliumGrid grid = simulation.getGridAt(0);
+        	Map<LogicalModel, Map<String, Float>> percents;
+        	if (state)
+        		 percents = grid.getStatePercents();
+        	else 
+        		percents = grid.getPhenoPercents();
+
+    		
+    		Map<String, Float> perc = percents.get(model);
+    		List<String> keys = new ArrayList(perc.keySet());
+    		Collections.sort(keys);
+    		
+    		int rownum = 0;
+    		Row row = sheet.createRow(rownum++);
+            int cellnum = 0;
+            for (String key : keys) {
+            	Cell cell = row.createCell(cellnum++);
+                cell.setCellValue((String) key);
+    		}
+
+        	for (int i = 0; i < iteration; i++) {
+        		grid = simulation.getGridAt(i);
+        		if (state)
+           		 percents = grid.getStatePercents();
+        		else 
+           		percents = grid.getPhenoPercents();
+        		
+        		keys = new ArrayList(perc.keySet());
+        		Collections.sort(keys);
+        		
+    			row = sheet.createRow(rownum++);
+    			cellnum = 0;
+        		for (String key : keys) {
+        			Cell cell = row.createCell(cellnum++);
+                    cell.setCellValue((Float) perc.get(key));
+                 }
+        	}
+        }
+        
+        wb.write(fileOut);
+        fileOut.close();
+	}
+	
 }
