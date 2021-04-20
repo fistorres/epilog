@@ -27,7 +27,7 @@ public class Epithelium {
 	private EpitheliumPerturbations perturbations;
 	private EpitheliumUpdateSchemeIntra priorities;
 	private EpitheliumUpdateSchemeInter updateSchemeInter;
-	private EpitheliumPhenotypes phenotypesTrack;
+	private EpitheliumPhenotypes phenotypes;
 
 	public Epithelium(int x, int y, String topologyID, String name, LogicalModel m, RollOver rollover,
 			EnumRandomSeed randomSeedType, int randomSeed)
@@ -41,19 +41,20 @@ public class Epithelium {
 		this.perturbations = new EpitheliumPerturbations();
 		this.updateSchemeInter = new EpitheliumUpdateSchemeInter(EpitheliumUpdateSchemeInter.DEFAULT_ALPHA,
 				UpdateCells.UPDATABLECELLS, randomSeedType, randomSeed);
-		this.phenotypesTrack = new EpitheliumPhenotypes();
+		this.phenotypes = new EpitheliumPhenotypes();
 	}
 
 	private Epithelium(String name, EpitheliumGrid grid, EpitheliumIntegrationFunctions eif,
 			EpitheliumUpdateSchemeIntra epc, EpitheliumPerturbations eap, EpitheliumUpdateSchemeInter usi,
 			EpitheliumPhenotypes phenos) {
+		
 		this.name = name;
 		this.grid = grid;
 		this.priorities = epc;
 		this.integrationFunctions = eif;
 		this.perturbations = eap;
 		this.updateSchemeInter = usi;
-		this.phenotypesTrack = phenos;
+		this.phenotypes = phenos;
 
 		// this.sComponentsUsed2Node = new HashMap<String, NodeInfo>();
 	}
@@ -61,7 +62,7 @@ public class Epithelium {
 	public Epithelium clone() {
 		return new Epithelium("CopyOf_" + this.name, this.grid.clone(), this.integrationFunctions.clone(),
 				this.priorities.clone(), this.perturbations.clone(), this.updateSchemeInter.clone(),
-						this.phenotypesTrack.clone());
+						this.phenotypes.clone());
 	}
 
 	public String toString() {
@@ -74,7 +75,7 @@ public class Epithelium {
 				&& this.integrationFunctions.equals(otherEpi.integrationFunctions)
 				&& this.perturbations.equals(otherEpi.perturbations)
 				&& this.updateSchemeInter.equals(otherEpi.getUpdateSchemeInter())
-			    && this.phenotypesTrack.equals(otherEpi.getPhenosToTrack()));
+			    && this.phenotypes.equals(otherEpi.getPhenotypes()));
 	}
 
 
@@ -191,26 +192,26 @@ public class Epithelium {
 		return this.perturbations;
 	}
 	
-	public EpitheliumPhenotypes getPhenosToTrack() {
-		return this.phenotypesTrack;
+	public EpitheliumPhenotypes getPhenotypes() {
+		return this.phenotypes;
 	}
 	
 	public Map<LogicalModel, Set<Phenotype>> getAllPhenotypes() {
-		return this.phenotypesTrack.getPhenotypes();
+		return this.phenotypes.getPhenotypes();
 	}
-	public Set<Phenotype> getPhenosToTrack(LogicalModel m) {
-		return this.phenotypesTrack.getPhenotypes(m);
-	}
-	
-	public void setPhenosToTrack(EpitheliumPhenotypes phenos) {
-		this.phenotypesTrack = phenos;
+	public Set<Phenotype> getPhenotypes(LogicalModel m) {
+		return this.phenotypes.getPhenotypes(m);
 	}
 	
-	public void addPheno(LogicalModel m, String name, Boolean use, Color color, String pheno) {
-		this.phenotypesTrack.addPhenotype(m, name, use, color, pheno);
+	public void setPhenotypes(EpitheliumPhenotypes phenos) {
+		this.phenotypes = phenos;
+	}
+	
+	public void addPheno(LogicalModel m, String name, String pheno) {
+		this.phenotypes.addPhenotype(m, name, pheno);
 	}
 	public void addPhenosArray(LogicalModel m, Set<Phenotype> phenoArray) {
-		this.phenotypesTrack.addPhenoSet(m, phenoArray);
+		this.phenotypes.addPhenoSet(m, phenoArray);
 	}
 
 	public void setGridWithComponentValue(String nodeID, byte value, List<Tuple2D<Integer>> lTuples) {

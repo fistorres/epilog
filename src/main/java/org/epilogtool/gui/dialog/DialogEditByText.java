@@ -1,7 +1,8 @@
-package org.epilogtool.gui;
+package org.epilogtool.gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -26,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import org.colomoto.biolqm.LogicalModel;
@@ -34,9 +36,9 @@ import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
 import org.epilogtool.core.topology.RollOver;
+import org.epilogtool.gui.EpiGUI;
 import org.epilogtool.gui.EpiGUI.TabChangeNotifyProj;
 import org.epilogtool.gui.color.ColorUtils;
-import org.epilogtool.gui.dialog.EscapableDialog;
 import org.epilogtool.project.Project;
 
 public abstract class DialogEditByText extends EscapableDialog {
@@ -81,7 +83,6 @@ public abstract class DialogEditByText extends EscapableDialog {
 
 			try {
 				EpiGUI.getInstance().saveAsTxt(def.getText());
-				close();
 			} catch (Exception ex) {
 				EpiGUI.getInstance().userMessageError(Txt.get("s_MENU_CANNOT_SAVE"), Txt.get("s_MENU_SAVE_AS"));
 			}
@@ -164,7 +165,7 @@ public abstract class DialogEditByText extends EscapableDialog {
 		this.jpCenter.add(jScroll);
 		
 		this.help = new JPanel();
-		this.help.setBorder(BorderFactory.createTitledBorder("HELP"));
+		this.help.setBorder(BorderFactory.createTitledBorder(Txt.get("s_HELP_DIA_TITLE")));
 		
 		this.helpText = new JLabel();
 		this.help.add(this.helpText);
@@ -184,26 +185,31 @@ public abstract class DialogEditByText extends EscapableDialog {
 	}
 	
 	public void setHelpText() {
-		String varOder = Txt.get("s_VAR_ORDER_HELP_PARSING");
-		String vars = "";
-		Set<LogicalModel> modelSet = this.epi.getEpitheliumGrid().getModelSet();
-		for (LogicalModel m : modelSet) {
-			vars += Project.getInstance().getInstance().getModelName(m);
-			vars += ":  ";
-			int size = 0;
-			for (NodeInfo var: m.getComponents()) {
-				vars += var.getNodeID();
-				vars += ",";
-			}
-
-			vars = vars.substring(0, vars.length() - 1);
-			vars += "<br>";
-		}
+//		String varOder = Txt.get("s_VAR_ORDER_HELP_PARSING");
+//		String vars = "";
+//		Set<LogicalModel> modelSet = this.epi.getEpitheliumGrid().getModelSet();
+//		for (LogicalModel m : modelSet) {
+//			vars += "Model: ";
+//			vars += Project.getInstance().getInstance().getModelName(m);
+//			vars += ":  ";
+//			int size = 0;
+//			for (NodeInfo var: m.getComponents()) {
+//				vars += var.getNodeID();
+//				vars += ",";
+//			}
+//
+//			vars = vars.substring(0, vars.length() - 1);
+//			vars += "<br>";
+//		}
+//		
+//		String header = Txt.get("S_HELP_PARSING");
+//		String unique = this.getHelpText();
+//		System.out.println(unique);
 		
-		String header = Txt.get("S_HELP_PARSING");
-		String unique = this.getHelpText();
-		this.helpText.setText(
-				"<html>" + varOder + "<br>" + vars + "<br>" + header + "<br>" + unique + "</html>");
+		this.helpText.setText(this.getHelpText());
+		this.helpText.setFont(this.helpText.getFont().
+				deriveFont(this.helpText.getFont().getStyle() & ~Font.BOLD));
+
 	}
 	
 	public abstract String getHelpText();

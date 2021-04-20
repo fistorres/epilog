@@ -1,3 +1,4 @@
+
 package org.epilogtool.io;
 
 import java.awt.Color;
@@ -81,7 +82,6 @@ public class Parser {
 
 		while ((line = br.readLine()) != null) {
 			line = line.trim();
-			System.out.println(line);
 
 			if (line.startsWith("#"))
 				continue;
@@ -452,38 +452,6 @@ public class Parser {
 		}
 		
 
-		/*
-		 * // Model Priority classes // PR #model node1,node2:...:nodei for
-		 * (LogicalModel m : model2Key.keySet()) { if (epi.hasModel(m)) {
-		 * 
-		 * ModelGrouping mpc = null; Rates rates = epi.getRates(m); Boolean active =
-		 * epi.getActive(m);
-		 * 
-		 * String sPCs = "";
-		 * 
-		 * // if PC are selected if (active) { mpc = epi.getPriorityClasses(m); for (int
-		 * idxPC = 0; idxPC < mpc.size(); idxPC++) { if (!sPCs.isEmpty()) sPCs += ":";
-		 * List<String> pcVars = mpc.getClassVars(idxPC).get(0); sPCs += join(pcVars,
-		 * ","); }
-		 * 
-		 * System.out.println(mpc.toString()); System.out.println(sPCs);
-		 * 
-		 * // if Rates ise selected } else { // Init PC, so there is only one class.
-		 * epi.initPriorityClasses(m); mpc = epi.getPriorityClasses(m);
-		 * 
-		 * Boolean uni = rates.isUniform(); if (uni) { sPCs += "$RU"; } else { sPCs +=
-		 * "$RN"; sPCs += Arrays.toString(rates.getAllRates()).replaceAll("\\s+",""); }
-		 * }
-		 * 
-		 * w.println("PR " + model2Key.get(m) + " " + sPCs);
-		 * 
-		 * 
-		 * 
-		 * }
-		 * 
-		 * w.println(); }
-		 */ 
-
 		// Model All Perturbations
 		// old -> PT #model (Perturbation) R G B cell1-celli,celln,...
 		// new -> PT (Perturbation) R G B cell1-celli,celln,...
@@ -513,19 +481,16 @@ public class Parser {
 			}
 		}
 		w.println();
-
-			
 		
-		 Set<String> models = Project.getInstance().getModelNames();
+		Set<String> models = Project.getInstance().getModelNames();
 		 
-		 for (String model : models) {
+		for (String model : models) {
 				LogicalModel m = Project.getInstance().getModel(model);
 				if (epi.hasModel(m)) {
-					Set<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
-					for (Phenotype pheno : phenos)
-						w.print("PH " + model + " " + pheno.getName() + " " + pheno.getUse() + " " + 
-					pheno.getColor().getRed() + " " + pheno.getColor().getGreen() + " " + 
-								pheno.getColor().getBlue() + " " + pheno.getPheno() + "\n");
+					Set<Phenotype> phenos = epi.getPhenotypes().getPhenotypes(m);
+					if (phenos != null)
+						for (Phenotype pheno : phenos)
+							w.print("PH " + model + " " + pheno.getName() + " " + pheno.getPheno() + "\n");
 
 				}
 		}
@@ -543,16 +508,14 @@ public class Parser {
 		for (String model : models) {
 			LogicalModel m = Project.getInstance().getModel(model);
 			if (epi.hasModel(m)) {
-				Set<Phenotype> phenos = epi.getPhenosToTrack().getPhenotypes(m);
+				Set<Phenotype> phenos = epi.getPhenotypes().getPhenotypes(m);
 				for (Phenotype pheno : phenos)
-				 text += "PH " + model + " " + pheno.getName() + " " + pheno.getUse() + " " + 
-				 ColorUtils.getColorCode(pheno.getColor()) + " " + pheno.getPheno() + "\n";
+				 text += "PH " + model + " " + pheno.getName() + " " + pheno.getPheno() + "\n";
 
 			}
 			text += "\n";
 		}
 		return text;
-		
 		
 	}
 	
@@ -633,10 +596,8 @@ public class Parser {
 			if (definitions.startsWith("PH")) { 
 					String[] saTmp = definitions.split("\\s+");
 					LogicalModel m = Project.getInstance().getModel(saTmp[1]);
-					Color color = ColorUtils.getColor(saTmp[4], saTmp[5], saTmp[6]);
 					if (save) 
-						epi.addPheno(m, saTmp[2], Boolean.parseBoolean(saTmp[3]),
-								color, saTmp[7]);
+						epi.addPheno(m, saTmp[2], saTmp[3]);
 			}
 		} catch (Exception  e) {
 			return false;

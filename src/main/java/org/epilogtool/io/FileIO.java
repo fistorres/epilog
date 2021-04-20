@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -260,56 +261,56 @@ public class FileIO {
 		}
 	}
 	
-	public static void writeSimStats2File(String file, Simulation simulation, int iteration, boolean state) 
+	public static void writeSimStats2File(String file, Simulation simulation, int iteration, Set<String> models) 
 			throws IOException {
-        Workbook wb = new HSSFWorkbook();
   
-        OutputStream fileOut = new FileOutputStream(file);
           
         for(LogicalModel model : Project.getInstance().getModels()) {
-        	Sheet sheet = wb.createSheet(Project.getInstance().getModelName(model));
+        	String modelName = Project.getInstance().getModelName(model);
+            FileWriter csvWriter = new FileWriter(file.substring(0, file.length() - 4) + 
+            		"_" + modelName + file.substring(file.length() - 4, file.length()));
+
+        	
+        	if (!models.contains(modelName)) {
+        		csvWriter.close();
+        		continue;
+        	}
         	
         	EpitheliumGrid grid = simulation.getGridAt(0);
-        	Map<LogicalModel, Map<String, Float>> percents;
-        	if (state)
-        		 percents = grid.getStatePercents();
-        	else 
-        		percents = grid.getPhenoPercents();
-
-    		
+        	Map<LogicalModel, Map<String, Float>> percents = grid.getPhenoPercents();
     		Map<String, Float> perc = percents.get(model);
+    		
     		List<String> keys = new ArrayList(perc.keySet());
     		Collections.sort(keys);
     		
-    		int rownum = 0;
-    		Row row = sheet.createRow(rownum++);
-            int cellnum = 0;
-            for (String key : keys) {
-            	Cell cell = row.createCell(cellnum++);
-                cell.setCellValue((String) key);
+    		csvWriter.append("Iteration");
+    		csvWriter.append(",");
+            for (int i = 0; i < keys.size(); i++) {
+            	csvWriter.append(keys.get(i));
+            	if (i < keys.size() - 1)
+            		csvWriter.append(",");
     		}
+			csvWriter.append("\n");
 
         	for (int i = 0; i < iteration; i++) {
         		grid = simulation.getGridAt(i);
-        		if (state)
-           		 percents = grid.getStatePercents();
-        		else 
            		percents = grid.getPhenoPercents();
         		
         		keys = new ArrayList(perc.keySet());
         		Collections.sort(keys);
         		
-    			row = sheet.createRow(rownum++);
-    			cellnum = 0;
-        		for (String key : keys) {
-        			Cell cell = row.createCell(cellnum++);
-                    cell.setCellValue((Float) perc.get(key));
+    			csvWriter.append("" + i);
+            	csvWriter.append(",");
+                for (int e = 0; e < keys.size(); e++) {
+
+                	csvWriter.append("" + percents.get(model).get(keys.get(e)));
+                	if (e < keys.size() - 1)
+            			csvWriter.append(",");
                  }
+                csvWriter.append("\n");
         	}
+        	csvWriter.flush();
+            csvWriter.close();
         }
-        
-        wb.write(fileOut);
-        fileOut.close();
 	}
-	
 }

@@ -205,6 +205,8 @@ public class EpiTreePanel extends JPanel {
 		epiNode.add(gm);
 		DefaultMutableTreeNode it = new DefaultMutableTreeNode(EpiTab.TAB_INTEGRATION);
 		epiNode.add(it);
+		DefaultMutableTreeNode ph = new DefaultMutableTreeNode(EpiTab.TAB_PHENOTYPES);
+		epiNode.add(ph);
 		DefaultMutableTreeNode ic = new DefaultMutableTreeNode(EpiTab.TAB_INITCONDITIONS);
 		epiNode.add(ic);
 		DefaultMutableTreeNode ptc = new DefaultMutableTreeNode(EpiTab.TAB_PERTURBATIONS);
@@ -213,8 +215,7 @@ public class EpiTreePanel extends JPanel {
 		epiNode.add(mu);
 		DefaultMutableTreeNode eu = new DefaultMutableTreeNode(EpiTab.TAB_EPIUPDATING);
 		epiNode.add(eu);
-		DefaultMutableTreeNode ph = new DefaultMutableTreeNode(EpiTab.TAB_PHENOTYPES);
-		epiNode.add(ph);
+	
 		if (EpiGUI.getInstance().getDeveloperMode()) {
 			DefaultMutableTreeNode cd = new DefaultMutableTreeNode(EpiTab.TAB_CELLDIVISION);
 			epiNode.add(cd);
@@ -271,8 +272,11 @@ public class EpiTreePanel extends JPanel {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
 			
 			if (node.isLeaf()) {
-				popupText.show(e.getComponent(), e.getX(), e.getY());
-				
+				if (node.toString().equals(EpiTab.TAB_PHENOTYPES) ||
+						node.toString().equals(EpiTab.TAB_INTEGRATION) ||
+						node.toString().equals(EpiTab.TAB_PRIORITIES) ||
+						node.toString().equals(EpiTab.TAB_EPIUPDATING))
+					popupText.show(e.getComponent(), e.getX(), e.getY());
 			} else {
 				popupmenu.show(e.getComponent(), e.getX(), e.getY());
 			}				

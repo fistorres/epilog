@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
@@ -45,14 +46,19 @@ import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
 import org.epilogtool.core.EpitheliumGrid;
+import org.epilogtool.gui.dialog.CellularModelUpdateEditByTextDialog;
 import org.epilogtool.gui.dialog.DialogAbout;
+import org.epilogtool.gui.dialog.DialogEditByText;
 import org.epilogtool.gui.dialog.DialogEditEpithelium;
 import org.epilogtool.gui.dialog.DialogEditPreferences;
 import org.epilogtool.gui.dialog.DialogMessage;
 import org.epilogtool.gui.dialog.DialogNewEpithelium;
 import org.epilogtool.gui.dialog.DialogRenameSBML;
 import org.epilogtool.gui.dialog.DialogReplaceSBML;
+import org.epilogtool.gui.dialog.EpitheliumUpdateEditByTextDialog;
+import org.epilogtool.gui.dialog.IntegrationEditByTextDialog;
 import org.epilogtool.gui.dialog.PhenotypesEditByTextDialog;
+import org.epilogtool.gui.dialog.SimulationStatsDialog;
 import org.epilogtool.gui.menu.CellularModelMenu;
 import org.epilogtool.gui.menu.CloseTabPopupMenu;
 import org.epilogtool.gui.menu.EpitheliumMenu;
@@ -69,11 +75,12 @@ import org.epilogtool.gui.tab.EpiTabInputDefinition;
 import org.epilogtool.gui.tab.EpiTabModelGrid;
 import org.epilogtool.gui.tab.EpiTabPerturbations;
 import org.epilogtool.gui.tab.EpiTabSimulation;
-import org.epilogtool.gui.tab.EpiTabTrackPhenotypes;
+import org.epilogtool.gui.tab.EpiTabPhenotypeDefinitions;
 import org.epilogtool.gui.widgets.CloseTabButton;
 import org.epilogtool.io.FileIO;
 import org.epilogtool.io.FileResource;
 import org.epilogtool.project.Project;
+import org.epilogtool.project.Simulation;
 
 /**
  * Class that defines the GUI of EPILOG. This is the main window where the GUI
@@ -192,7 +199,7 @@ public class EpiGUI extends JFrame {
 					return;
 				epitab.notifyChange();
 			}
-		}); 
+		});
 
 		// Epithelium list
 		this.epiTreePanel = new EpiTreePanel(epiMenu, toolsMenu);
@@ -271,13 +278,12 @@ public class EpiGUI extends JFrame {
 	public void userMessageError(String msg, String title) {
 		this.userMessage(msg, title, JOptionPane.ERROR_MESSAGE);
 	}
-	
 
 	public void newEpithelium() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
 		DialogNewEpithelium dialogPanel = new DialogNewEpithelium(Project.getInstance().getModelNames(),
 				Project.getInstance().getEpitheliumNameList());
- 
+
 		Window win = SwingUtilities.getWindowAncestor(this);
 		JDialog dialog = new JDialog(win, "New epithelium", ModalityType.APPLICATION_MODAL);
 		dialog.getContentPane().add(dialogPanel);
@@ -323,7 +329,6 @@ public class EpiGUI extends JFrame {
 			this.validateGUI();
 		}
 	}
-	
 
 	public void editEpithelium() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
@@ -390,8 +395,6 @@ public class EpiGUI extends JFrame {
 		this.cleanGUI();
 		this.validateGUI();
 	}
-	
-	
 
 	public String getVersion() {
 		return this.version;
@@ -540,8 +543,7 @@ public class EpiGUI extends JFrame {
 	 * @throws ClassNotFoundException
 	 */
 	public void loadPEPS(String filename)
-			throws InstantiationException,
-			IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, ClassNotFoundException {
 		if (!this.canClose(Txt.get("s_APP_LOAD"))) {
 			return;
@@ -593,8 +595,8 @@ public class EpiGUI extends JFrame {
 			// check if file already exists
 			while (doExport && destinationFile.exists() && !overrideExistingFile) {
 				// let the user decide whether to override the existing file
-				overrideExistingFile = (JOptionPane.showConfirmDialog(this, "Replace file " + 
-				destinationFile.getAbsolutePath() + "?", "Export settings",
+				overrideExistingFile = (JOptionPane.showConfirmDialog(this,
+						"Replace file " + destinationFile.getAbsolutePath() + "?", "Export settings",
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
 
 				// let the user choose another file if the existing file shall not be overridden
@@ -621,7 +623,6 @@ public class EpiGUI extends JFrame {
 			}
 		}
 	}
-	
 
 	public void savePEPS() throws Exception {
 		String fName = Project.getInstance().getFilenamePEPS();
@@ -633,14 +634,14 @@ public class EpiGUI extends JFrame {
 			this.validateGUI();
 		}
 	}
-	
+
 	public void saveAsTxt(String def) throws Exception {
 		// declare JFileChooser
 		JFileChooser fileChooser = new JFileChooser();
-	
+
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(".txt", "txt");
 		fileChooser.setFileFilter(filter);
-		
+
 //		String fName = Project.getInstance().;
 //				if (fName != null) {
 //					fileChooser.setCurrentDirectory(new java.io.File(fName));
@@ -650,7 +651,7 @@ public class EpiGUI extends JFrame {
 		if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 			// indicates whether the user still wants to export the settings
 			boolean doExport = true;
-			
+
 			// indicates whether to override an already existing file
 			boolean overrideExistingFile = false;
 
@@ -662,35 +663,99 @@ public class EpiGUI extends JFrame {
 			// check if file already exists
 			while (doExport && destinationFile.exists() && !overrideExistingFile) {
 				// let the user decide whether to override the existing file
-				overrideExistingFile = (JOptionPane.showConfirmDialog(this, "Replace file " + 
-				destinationFile.getAbsolutePath() + "?", "Export settings",
+				overrideExistingFile = (JOptionPane.showConfirmDialog(this,
+						"Replace file " + destinationFile.getAbsolutePath() + "?", "Export settings",
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
 
-					// let the user choose another file if the existing file shall not be overridden
-					if (!overrideExistingFile) {
-						if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-							// get new destination file
-							name_ext = fileChooser.getSelectedFile().getAbsolutePath();
-							name_ext += (name_ext.endsWith(".txt") ? "" : ".txt");
-							destinationFile = new File(name_ext);
-						} else {
-							// seems like the user does not want to export the settings any longer
-							doExport = false;
-						}
+				// let the user choose another file if the existing file shall not be overridden
+				if (!overrideExistingFile) {
+					if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+						// get new destination file
+						name_ext = fileChooser.getSelectedFile().getAbsolutePath();
+						name_ext += (name_ext.endsWith(".txt") ? "" : ".txt");
+						destinationFile = new File(name_ext);
+					} else {
+						// seems like the user does not want to export the settings any longer
+						doExport = false;
 					}
 				}
+			}
 
 			if (doExport) {
 				// save the peps file with the new name and update Project
 				FileIO.saveTxt(destinationFile.getAbsolutePath(), def);
-				
+
 //				Project.getInstance().setFilenamePEPS(destinationFile.getAbsolutePath());
 //				Project.getInstance().setChanged(false);
 				this.validateGUI();
 			}
-		 }
+		}
 	}
-	
+
+	public void showPhenosDialog(Simulation simulation, int iteration) {
+
+		SimulationStatsDialog dia = new SimulationStatsDialog(simulation, iteration);
+
+		Window win = SwingUtilities.getWindowAncestor(this);
+		JDialog dialog = new JDialog(win, "Save phenotypes statistics", ModalityType.APPLICATION_MODAL);
+		dialog.getContentPane().add(dia);
+		dialog.pack();
+		dialog.setLocationRelativeTo(null);
+		dialog.setVisible(true);
+
+	}
+
+	public void savePhenosCSV(Simulation simulation, int iteration, Set<String> models) throws IOException {
+		// declare JFileChooser
+		JFileChooser fileChooser = new JFileChooser();
+
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(".csv", "csv");
+		fileChooser.setFileFilter(filter);
+
+//				String fName = Project.getInstance().;
+//						if (fName != null) {
+//							fileChooser.setCurrentDirectory(new java.io.File(fName));
+//						}
+
+		// let the user choose the destination file
+		if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			// indicates whether the user still wants to export the settings
+			boolean doExport = true;
+
+			// indicates whether to override an already existing file
+			boolean overrideExistingFile = false;
+
+			// get destination file
+			String name_ext = fileChooser.getSelectedFile().getAbsolutePath();
+			name_ext += (name_ext.endsWith(".csv") ? "" : ".csv");
+			File destinationFile = new File(name_ext);
+
+			// check if file already exists
+			while (doExport && destinationFile.exists() && !overrideExistingFile) {
+				// let the user decide whether to override the existing file
+				overrideExistingFile = (JOptionPane.showConfirmDialog(this,
+						"Replace file " + destinationFile.getAbsolutePath() + "?", "Export settings",
+						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
+
+				// let the user choose another file if the existing file shall not be overridden
+				if (!overrideExistingFile) {
+					if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+						// get new destination file
+						name_ext = fileChooser.getSelectedFile().getAbsolutePath();
+						name_ext += (name_ext.endsWith(".csv") ? "" : ".csv");
+					} else {
+						// seems like the user does not want to export the settings any longer
+						doExport = false;
+					}
+				}
+			}
+
+			if (doExport) {
+				FileIO.writeSimStats2File(name_ext, simulation, iteration, models);
+			}
+		}
+	}
+
 	public boolean loadTxt(DialogEditByText dia) throws IOException {
 		String filename = FileSelectionHelper.openFilename("txt");
 		if (filename != null) {
@@ -719,7 +784,7 @@ public class EpiGUI extends JFrame {
 						"A model with the same name '" + fc.getSelectedFile().getName() + "' already exists!",
 						"Warning", JOptionPane.WARNING_MESSAGE);
 				return;
-			}	
+			}
 
 			LogicalModel newModel = FileIO.loadSBMLModel(fc.getSelectedFile());
 			for (NodeInfo node : newModel.getComponents()) {
@@ -872,7 +937,7 @@ public class EpiGUI extends JFrame {
 					DialogMessage dialogMsg = new DialogMessage();
 					Project.getInstance().replaceModel(model, newModel, selectedEpiList, dialogMsg);
 					dialogMsg.show("Replace model");
- 
+
 					JPanel jp = new JPanel();
 					if (!Project.getInstance().getProjectFeatures().getReplaceMessages().isEmpty()) {
 
@@ -921,7 +986,7 @@ public class EpiGUI extends JFrame {
 		}
 		return tabIndex;
 	}
-	
+
 //	public void alertEditByTextChanges(DialogEditByText dia) {
 ////		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
 ////		TreePath selPath = this.epiTreePanel.getSelectionPath();
@@ -941,19 +1006,16 @@ public class EpiGUI extends JFrame {
 //		JOptionPane.showMessageDialog(new JFrame(), node.toString() + " definitions were changed by text!");
 //		validateGUI();
 //	}
-	
+
 	public void openEditByTextDialog() {
 		// get the epithelium
 		Epithelium epi = this.epiTreePanel.getSelectedEpithelium();
 		DefaultMutableTreeNode node = this.epiTreePanel.getSelectedNode();
-		
-		
 		TreePath selPath = this.epiTreePanel.getSelectionPath();
-		
 
 		int tabIndex = this.getTabIndexForPath(selPath);
 		this.epiTabCloseTab(tabIndex);
-		
+
 		DialogEditByText dia = null;
 		if (node.toString().equals(DialogEditByText.TAB_EPIUPDATING)) {
 			dia = new EpitheliumUpdateEditByTextDialog(epi);
@@ -966,13 +1028,14 @@ public class EpiGUI extends JFrame {
 		}
 		if (dia != null) {
 			Window win = SwingUtilities.getWindowAncestor(this);
-			JDialog dialog = new JDialog(win, "Edit \"" + node.toString() + "\" as text", ModalityType.APPLICATION_MODAL);
+			JDialog dialog = new JDialog(win, "Edit " + node.toString(),
+					ModalityType.APPLICATION_MODAL);
 			dialog.getContentPane().add(dia);
 			dialog.pack();
 			dialog.setLocationRelativeTo(null);
 			dialog.setVisible(true);
 
-		}	
+		}
 	}
 
 	public void openEpiTab(Epithelium epi, TreePath selPath, String tabName) {
@@ -989,13 +1052,13 @@ public class EpiGUI extends JFrame {
 			} else if (tabName.equals(EpiTab.TAB_PERTURBATIONS)) {
 				epiTab = new EpiTabPerturbations(epi, selPath, tabChanged);
 			} else if (tabName.equals(EpiTab.TAB_PRIORITIES)) {
-				epiTab = new EpiTabCellularModelUpdate(epi, selPath, tabChanged); 
+				epiTab = new EpiTabCellularModelUpdate(epi, selPath, tabChanged);
 			} else if (tabName.equals(EpiTab.TAB_EPIUPDATING)) {
 				epiTab = new EpiTabEpitheliumModelUpdate(epi, selPath, tabChanged);
 			} else if (tabName.equals(EpiTab.TAB_MODELGRID)) {
 				epiTab = new EpiTabModelGrid(epi, selPath, tabChanged);
 			} else if (tabName.equals(EpiTab.TAB_PHENOTYPES)) {
-				epiTab = new EpiTabTrackPhenotypes(epi, selPath, tabChanged);
+				epiTab = new EpiTabPhenotypeDefinitions(epi, selPath, tabChanged);
 			}
 			if (epiTab != null) {
 				this.epiRightFrame.addTab(title, epiTab);

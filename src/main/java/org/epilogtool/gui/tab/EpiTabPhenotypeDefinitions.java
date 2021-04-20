@@ -1,7 +1,6 @@
 package org.epilogtool.gui.tab;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -17,14 +16,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -32,8 +27,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 
@@ -45,11 +38,10 @@ import org.epilogtool.core.Epithelium;
 import org.epilogtool.core.EpitheliumPhenotypes;
 import org.epilogtool.core.EpitheliumPhenotypes.Phenotype;
 import org.epilogtool.gui.EpiGUI.TabChangeNotifyProj;
-import org.epilogtool.gui.widgets.JComboCheckBox;
 import org.epilogtool.gui.widgets.JComboWideBox;
 import org.epilogtool.project.Project;
 
-public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
+public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 
 	/**
 	 * 
@@ -61,8 +53,8 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 	
 	private TabProbablyChanged tpc;
 
-	private JButton jbTrackAll;
-	private JButton jbUntrackAll;
+//	private JButton jbTrackAll;
+//	private JButton jbUntrackAll;
 	private JButton jbUp;
 	private JButton jbDown;
 	private JButton jbClone;
@@ -76,13 +68,12 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 	private JScrollPane tablePane;
 
 	private JPanel tableControl;
-	private JComboCheckBox jccbSBML;
 	
 	private int minCellSize;
 
 	private EpitheliumPhenotypes userPhenotypes;
 	
-	public EpiTabTrackPhenotypes(Epithelium e, TreePath path, TabChangeNotifyProj tabChanged) {
+	public EpiTabPhenotypeDefinitions(Epithelium e, TreePath path, TabChangeNotifyProj tabChanged) {
 		super(e, path, tabChanged);
 	}
 	
@@ -111,8 +102,8 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 		this.model2Table = new HashMap<LogicalModel, PhenoTable>();
 		this.userPhenotypes = new EpitheliumPhenotypes();
 		for (LogicalModel m : modelList) {
-			if (this.epithelium.getPhenosToTrack().getModelSet().contains(m)) {
-				for (Phenotype pheno : this.epithelium.getPhenosToTrack(m))
+			if (this.epithelium.getPhenotypes().getModelSet().contains(m)) {
+				for (Phenotype pheno : this.epithelium.getPhenotypes(m))
 					this.userPhenotypes.addPhenotype(m, pheno.clone());
 			} else {
 				// Adds a new one
@@ -123,22 +114,22 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 		this.isInitialized = true;
 				
 		this.buttonsPanel = new JPanel(new FlowLayout());
-		this.jbTrackAll = new JButton("Track All");
-		this.jbTrackAll.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				model2Table.get(selModel).toggleSelect(true);
-			}
-		});
-		this.buttonsPanel.add(jbTrackAll);
-		this.jbUntrackAll = new JButton("Untrack All");
-		this.jbUntrackAll.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				model2Table.get(selModel).toggleSelect(false);
-			}
-		});
-		this.buttonsPanel.add(jbUntrackAll);
+//		this.jbTrackAll = new JButton("Track All");
+//		this.jbTrackAll.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				model2Table.get(selModel).toggleSelect(true);
+//			}
+//		});
+//		this.buttonsPanel.add(jbTrackAll);
+//		this.jbUntrackAll = new JButton("Untrack All");
+//		this.jbUntrackAll.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				model2Table.get(selModel).toggleSelect(false);
+//			}
+//		});
+//		this.buttonsPanel.add(jbUntrackAll);
 		this.jbUp = new JButton("↑");
 		this.jbUp.addActionListener(new ActionListener() {
 			@Override
@@ -227,7 +218,6 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			this.tableControl.remove(tmpTablePane);
 		}
 		
-		PhenoTable selTable = this.getTable(this.selModel);
 		this.tablePane = new JScrollPane(this.getTable(this.selModel).getTable());
 		this.tableControl.add(this.tablePane, BorderLayout.CENTER);
 		this.center.add(this.tableControl, BorderLayout.CENTER);
@@ -246,8 +236,7 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			if (this.userPhenotypes.getModelSet().contains(m)) {
 				Set<Phenotype> phenos = this.userPhenotypes.getPhenotypes(m);
 				for (Phenotype pheno : phenos)
-					phenoTable.addFullRow(pheno.getName(), pheno.getUse(),
-							pheno.getColor(), pheno.getPheno());
+					phenoTable.addFullRow(pheno.getName(), pheno.getPheno());
 //				if (phenos.size() == 0)
 //					phenoTable.addEmptyRow();
 			} else {
@@ -262,8 +251,8 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 //		this.model2Table.clear();
 		this.userPhenotypes = new EpitheliumPhenotypes();
 		for (LogicalModel m : this.epithelium.getEpitheliumGrid().getModelSet()) {
-			if (this.epithelium.getPhenosToTrack().getModelSet().contains(m)) {
-				for (Phenotype pheno : this.epithelium.getPhenosToTrack(m))
+			if (this.epithelium.getPhenotypes().getModelSet().contains(m)) {
+				for (Phenotype pheno : this.epithelium.getPhenotypes(m))
 					this.userPhenotypes.addPhenotype(m, pheno.clone());
 			} else {
 				// Adds a new one
@@ -278,14 +267,14 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 	@Override
 	protected void buttonAccept() {
 		EpitheliumPhenotypes clone = this.userPhenotypes.clone();
-		this.epithelium.setPhenosToTrack(clone);
+		this.epithelium.setPhenotypes(clone);
 		this.tablePane.revalidate();
 		this.center.repaint();
 	}
 
 	@Override
 	protected boolean isChanged() {
-			EpitheliumPhenotypes epiPhenos = this.epithelium.getPhenosToTrack();
+			EpitheliumPhenotypes epiPhenos = this.epithelium.getPhenotypes();
 			if (!this.userPhenotypes.equals(epiPhenos))
 				return true;
 		return false;
@@ -327,13 +316,13 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			this.model = model;
 			
 			// Set the columns names
-			this.colnames = new String[this.model.getComponents().size() + 3];
+			this.colnames = new String[this.model.getComponents().size() + 1];
 			this.colnames[0] = "Name";
-			this.colnames[1] = "Track";
-			this.colnames[2] = "Color";
+//			this.colnames[1] = "Track";
+//			this.colnames[2] = "Color";
 
 			// Get the components names for the new columns
-			int i = 3;
+			int i = 1;
 			for (NodeInfo node : this.model.getComponents()) {
 				this.colnames[i] = node.getNodeID();
 				i++;
@@ -345,9 +334,9 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 
 			this.jtable.addPropertyChangeListener(this);
 			
-			TableColumn colorCol = this.jtable.getColumnModel().getColumn(2);
-			colorCol.setCellEditor(new ColorEditor());
-			colorCol.setCellRenderer(new ColorRenderer());
+//			TableColumn colorCol = this.jtable.getColumnModel().getColumn(2);
+//			colorCol.setCellEditor(new ColorEditor());
+//			colorCol.setCellRenderer(new ColorRenderer());
 			
 			// Set MAX and MIN values for each component and set editor
 			this.setNodeValues();
@@ -357,10 +346,10 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			return this.jtable;
 		}
 			
-		public void toggleSelect(boolean select) {
-			for (int i = 0; i < this.jtable.getRowCount(); i++) 
-				this.jtable.setValueAt(select, i, 1);
-		}
+//		public void toggleSelect(boolean select) {
+//			for (int i = 0; i < this.jtable.getRowCount(); i++) 
+//				this.jtable.setValueAt(select, i, 1);
+//		}
 			
 		public void remove() {
 			int[] rows = this.jtable.getSelectedRows();
@@ -371,11 +360,10 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 					Vector rowData = this.tableModel.getDataVector().elementAt(row);
 		        	String phenotype = "";
 		        	
-		        	for (int i = 3; i < rowData.size(); i++)
+		        	for (int i = 1; i < rowData.size(); i++)
 		        		phenotype += String.valueOf(rowData.get(i));
 			        
-					userPhenotypes.removePhenotype(selModel, (String) rowData.get(0),
-			        		(Boolean) rowData.get(1), (Color) rowData.get(2), phenotype);
+					userPhenotypes.removePhenotype(selModel, (String) rowData.get(0), phenotype);
 					
 					// remove from model
 			        int modelIndex = this.jtable.convertRowIndexToModel(row); 
@@ -425,15 +413,15 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			}
 		}
 			
-		public void addFullRow(String name, Boolean use, Color color, String pheno) {
+		public void addFullRow(String name, String pheno) {
 				
 			Object[] tempA = new Object[this.colnames.length];
 			tempA[0] = name;
-			tempA[1] = use;
-			tempA[2] = color;
+//			tempA[1] = use;
+//			tempA[2] = color;
 				
 			char[] phenotype = pheno.toCharArray();
-			for (int i = 3, e = 0; e < phenotype.length; i++, e++)
+			for (int i = 1, e = 0; e < phenotype.length; i++, e++)
 				tempA[i] = (char) phenotype[e];
 			
 			this.tableModel.addRow(tempA);
@@ -442,26 +430,26 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 		public void addEmptyRow() {
 			Object[] tempA = new Object[this.colnames.length];
 			tempA[0] = "Phenotype_1";
-			tempA[1] = false;
-			tempA[2] = Color.black;
+//			tempA[1] = false;
+//			tempA[2] = Color.black;
 			
 			String phenotype = "";
 			char temp = '*';
-			for (int i = 3; i < this.tableModel.getColumnCount(); i++) {
+			for (int i = 1; i < this.tableModel.getColumnCount(); i++) {
 				tempA[i] = temp;
 				phenotype += temp;
 			}
 				
 			this.tableModel.addRow(tempA);
 			userPhenotypes.addPhenotype(selModel, (String) tempA[0] ,
-				        (Boolean) tempA[1] , (Color) tempA[2] , phenotype);
+				        phenotype);
 			 
 			tpc.setChanged();
 
 		}
 		
 		public void setNodeValues() {
-			int varC = 3;
+			int varC = 1;
 			for (NodeInfo var : this.model.getComponents()) {
 				final JComboBox<String> jcombob = new JComboBox<String>();
 				jcombob.addItem("*");
@@ -497,7 +485,6 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 //		
 //	        }
 		}
-
 	
 		private class ModelTable extends DefaultTableModel{
 			public ModelTable(String[] colnames) {
@@ -511,12 +498,12 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 				case 0:
 					clazz = String.class;
 					break;
-				case 1:
-					clazz = Boolean.class;
-	        		break;
-				case 2:
-					clazz = Color.class;
-	        		break;
+//				case 1:
+//					clazz = Boolean.class;
+//	        		break;
+//				case 2:
+//					clazz = Color.class;
+//	        		break;
 				default:
 					// ??
 					clazz = JComboBox.class;
@@ -548,87 +535,85 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 			
 		}
 		
-		// copied color editor from oracle java tutorials 
-		public class ColorEditor extends AbstractCellEditor 
-			implements TableCellEditor,ActionListener {
-
-			Color currentColor;
-			JButton button;
-			JColorChooser colorChooser;
-			JDialog dialog;
-			protected static final String EDIT = "edit";
-
-			public ColorEditor() {
-				setOpaque(true); //MUST do this for background to show up.
-				button = new JButton();
-				button.setActionCommand(EDIT);
-				button.addActionListener(this);
-				button.setBorderPainted(false);
-
-				//Set up the dialog that the button brings up.
-				colorChooser = new JColorChooser();
-				dialog = JColorChooser.createDialog(button,"Pick a Color",
-                        true,  //modal
-                        colorChooser,
-                        this,  //OK button handler
-                        null); //no CANCEL button handler
-				}
-
-			public void actionPerformed(ActionEvent e) {
-				if (EDIT.equals(e.getActionCommand())) {
-					//The user has clicked the cell, so
-					//bring up the dialog.
-					button.setBackground((Color)  currentColor);
-					colorChooser.setColor((Color) currentColor);
-					dialog.setVisible(true);
-
-					fireEditingStopped(); //Make the renderer reappear.
-
-				} else { //User pressed dialog's "OK" button.
-					currentColor = (Color) colorChooser.getColor();
-				}
-			}
-
-			//Implement the one CellEditor method that AbstractCellEditor doesn't.
-			public Object getCellEditorValue() {
-				return currentColor;
-			}
-
-			//Implement the one method defined by TableCellEditor.
-			public Component getTableCellEditorComponent(JTable table,
-                                 Object value,
-                                 boolean isSelected,
-                                 int row,
-                                 int column) {
-				
-				currentColor = (Color) value;
-				return button;
-			}
-		}
-			
-		public class ColorRenderer extends JLabel
-           		implements TableCellRenderer {
-				
-			public ColorRenderer() {
-				setOpaque(true); 
-			}
-
-			public Component getTableCellRendererComponent(
-				JTable table, Object color,
-				boolean isSelected, boolean hasFocus,
-				int row, int column) {
-					
-				Color newColor = (Color) color;
-				setBackground(newColor);
-				return this;
-			}
-		}
+//		public class ColorEditor extends AbstractCellEditor 
+//			implements TableCellEditor,ActionListener {
+//
+//			Color currentColor;
+//			JButton button;
+//			JColorChooser colorChooser;
+//			JDialog dialog;
+//			protected static final String EDIT = "edit";
+//
+//			public ColorEditor() {
+//				setOpaque(true); //MUST do this for background to show up.
+//				button = new JButton();
+//				button.setActionCommand(EDIT);
+//				button.addActionListener(this);
+//				button.setBorderPainted(false);
+//
+//				//Set up the dialog that the button brings up.
+//				colorChooser = new JColorChooser();
+//				dialog = JColorChooser.createDialog(button,"Pick a Color",
+//                        true,  //modal
+//                        colorChooser,
+//                        this,  //OK button handler
+//                        null); //no CANCEL button handler
+//				}
+//
+//			public void actionPerformed(ActionEvent e) {
+//				if (EDIT.equals(e.getActionCommand())) {
+//					//The user has clicked the cell, so
+//					//bring up the dialog.
+//					button.setBackground((Color)  currentColor);
+//					colorChooser.setColor((Color) currentColor);
+//					dialog.setVisible(true);
+//
+//					fireEditingStopped(); //Make the renderer reappear.
+//
+//				} else { //User pressed dialog's "OK" button.
+//					currentColor = (Color) colorChooser.getColor();
+//				}
+//			}
+//
+//			//Implement the one CellEditor method that AbstractCellEditor doesn't.
+//			public Object getCellEditorValue() {
+//				return currentColor;
+//			}
+//
+//			//Implement the one method defined by TableCellEditor.
+//			public Component getTableCellEditorComponent(JTable table,
+//                                 Object value,
+//                                 boolean isSelected,
+//                                 int row,
+//                                 int column) {
+//				
+//				currentColor = (Color) value;
+//				return button;
+//			}
+//		}
+//			
+//		public class ColorRenderer extends JLabel
+//           		implements TableCellRenderer {
+//				
+//			public ColorRenderer() {
+//				setOpaque(true); 
+//			}
+//
+//			public Component getTableCellRendererComponent(
+//				JTable table, Object color,
+//				boolean isSelected, boolean hasFocus,
+//				int row, int column) {
+//					
+//				Color newColor = (Color) color;
+//				setBackground(newColor);
+//				return this;
+//			}
+//		}
 		@Override 
 		public void run() {
 			this.editingRow = this.jtable.convertRowIndexToModel(this.jtable.getEditingRow());
 			this.editingCol = this.jtable.convertColumnIndexToModel(this.jtable.getEditingColumn());
-			this.editingOldValue = this.jtable.getModel().getValueAt(this.editingRow,
-					this.editingCol);
+			this.editingOldValue = this.jtable.getModel().getValueAt(this.editingRow,this.editingCol);
 			
 			Component comp = this.getTable().getEditorComponent();
 //			  if (comp instanceof JComboBox) {
@@ -650,7 +635,7 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 					SwingUtilities.invokeLater(this);
 				} else {
 					Object newValue =  this.tableModel.getValueAt(this.editingRow, this.editingCol);
-					if (!Objects.equals(newValue, editingOldValue)) {
+					if (!Objects.equals(newValue, this.editingOldValue)) {
 						tpc.setChanged();
 
 					    Vector rowData = this.tableModel.getDataVector().elementAt(this.editingRow);
@@ -663,15 +648,30 @@ public class EpiTabTrackPhenotypes extends EpiTabDefinitions {
 					    	}
 					    }
 					    if (valid) {
-					    	String phenotype = "";
-							for (int i = 3; i < rowData.size(); i++) 
-								phenotype += String.valueOf(rowData.get(i));
-								
-							userPhenotypes.removePhenotype(selModel, (String) rowData.get(0) ,
-								        (Boolean) rowData.get(1), (Color) rowData.get(2), phenotype);
+				    		String newName = (String) rowData.get(0);
+				    		String oldName = newName;
+				    		String newPhenotype = "";
+				    		for (int i = 1; i < rowData.size(); i++) 
+								newPhenotype += String.valueOf(rowData.get(i));
+				    		
+				    		String oldPhenotype = newPhenotype;
+				    		
+					    	if (this.editingCol == 0) {
+					    		oldName = (String) this.editingOldValue;
+					    	} else {
+						    	oldPhenotype = "";
+								for (int i = 1; i < rowData.size(); i++) {
+									if (i == this.editingCol)
+										oldPhenotype += String.valueOf(this.editingOldValue);
+									else
+										oldPhenotype += String.valueOf(rowData.get(i));
+								}
+					    	}
+					    	
+							userPhenotypes.removePhenotype(selModel, oldName,
+									oldPhenotype);
 							    
-							userPhenotypes.addPhenotype(selModel, (String) rowData.get(0) ,
-								        (Boolean) rowData.get(1), (Color) rowData.get(2), phenotype);
+							userPhenotypes.addPhenotype(selModel, (String) rowData.get(0), newPhenotype);
 					    }
 					}
 				}

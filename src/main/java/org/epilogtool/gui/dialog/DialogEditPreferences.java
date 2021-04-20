@@ -51,10 +51,10 @@ public class DialogEditPreferences extends EscapableDialog {
 		c.gridy = 0;
 		this.panelSimulation.add(new JLabel(EnumStatePercent.title()), c);
 		this.jcbGridStatePercent = new JComboBox<EnumStatePercent>(
-				new EnumStatePercent[] { EnumStatePercent.YES, EnumStatePercent.NO });
+				new EnumStatePercent[] { EnumStatePercent.NO, EnumStatePercent.YES });
 		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
 		for (int i = 0; i < this.jcbGridStatePercent.getItemCount(); i++) {
-			if (statePercent != null && statePercent.equals(this.jcbGridNodePercent.getItemAt(i).toString()))
+			if (statePercent != null && statePercent.equals(this.jcbGridStatePercent.getItemAt(i).toString()))
 				this.jcbGridStatePercent.setSelectedIndex(i);
 			}
 		c.gridx = 1;
@@ -66,7 +66,7 @@ public class DialogEditPreferences extends EscapableDialog {
 		c.gridy = 1;
 		this.panelSimulation.add(new JLabel(EnumNodePercent.title()), c);
 		this.jcbGridNodePercent = new JComboBox<EnumNodePercent>(
-				new EnumNodePercent[] { EnumNodePercent.YES, EnumNodePercent.NO });
+				new EnumNodePercent[] {EnumNodePercent.NO, EnumNodePercent.YES });
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
 		for (int i = 0; i < this.jcbGridNodePercent.getItemCount(); i++) {
 			if (nodePercent != null && nodePercent.equals(this.jcbGridNodePercent.getItemAt(i).toString()))

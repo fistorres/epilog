@@ -54,11 +54,13 @@ class ToolTipTreeCellRenderer implements TreeCellRenderer {
 							tipKey = this.getTooltipModelUpdateScheme(epi);
 						} else if (sLeaf.equals(EpiTab.TAB_EPIUPDATING)) {
 							tipKey = this.getTooltipEpithelialUpdateScheme(epi);
+						} else if (sLeaf.equals(EpiTab.TAB_PHENOTYPES)) {
+								tipKey = this.getTooltipPhenotypesDefinition(epi);
 						} else if (sLeaf.equals(EpiTab.TOOL_SIMULATION)) {
 							tipKey = this.getTooltipSimulation(epi);
 						} else if (sLeaf.equals(EpiTab.TOOL_MONTECARLO)) {
 							tipKey = this.getTooltipSimulation(epi);
-						}
+						} 
 					}
 				}
 			} else {
@@ -160,4 +162,16 @@ class ToolTipTreeCellRenderer implements TreeCellRenderer {
 		tipKey += "</html>";
 		return tipKey;
 	}
+	
+	private String getTooltipPhenotypesDefinition(Epithelium epi) {
+		String tipKey = "<html>";
+		for (LogicalModel m : epi.getEpitheliumGrid().getModelSet()) {
+			tipKey += "- " + Project.getInstance().getProjectFeatures().getModelName(m) + "</b><br/>";
+			int size = (epi.getPhenotypes(m) != null) ?  epi.getPhenotypes(m).size() : 0;
+			tipKey += "&nbsp;&nbsp;. " +  size + " states defined <br/>";
+		}
+		tipKey += "</html>";
+		return tipKey;
+	}
+	
 }
