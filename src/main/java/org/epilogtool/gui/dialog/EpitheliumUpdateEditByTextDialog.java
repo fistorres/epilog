@@ -7,6 +7,7 @@ import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
+import org.epilogtool.core.EpitheliumPhenotypes;
 import org.epilogtool.io.Parser;
 import org.epilogtool.project.Project;
 
@@ -29,21 +30,23 @@ public class EpitheliumUpdateEditByTextDialog extends DialogEditByText {
 			"AS 0.0	for an asynchronous update (alpha=0.0) <br>"+
 			"AS 0.5 for an alpha-asynchronous update (alpha=0.5)<br> ";
 		
-		
 		return "<html><div style='text-align: left;'> <b>"  + 
 				header + "</b><br>" + syntax + "</div></html>";
 		
 	}
 	
-
 	@Override
-	public void getParsing() {
-		this.def.setText(Parser.getTextFormatEpitheliumUpdateMode(this.epi));
+	public String getDefinitionText() {
+		return Parser.getTextFormatEpitheliumUpdateMode(this.epi);
 	}
 
 	@Override
 	public boolean parse(String textarea, boolean save) throws NumberFormatException, IOException {
-		return Parser.parseEpitheliumUpdateMode(epi, textarea, save);
+		for (String line : textarea.split("\\n"))
+			if(!Parser.parseEpitheliumUpdateMode(epi, line, save))
+				return false;
+	
+		return true;
 	}
 
 	@Override

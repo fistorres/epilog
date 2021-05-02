@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -196,7 +197,7 @@ public class Epithelium {
 		return this.phenotypes;
 	}
 	
-	public Map<LogicalModel, Set<Phenotype>> getAllPhenotypes() {
+	public Map<LogicalModel, LinkedHashSet<Phenotype>> getAllPhenotypes() {
 		return this.phenotypes.getPhenotypes();
 	}
 	public Set<Phenotype> getPhenotypes(LogicalModel m) {

@@ -267,8 +267,10 @@ public class FileIO {
           
         for(LogicalModel model : Project.getInstance().getModels()) {
         	String modelName = Project.getInstance().getModelName(model);
+        	String modelNameFile = modelName.substring(0, modelName.length() - 5);
+        	
             FileWriter csvWriter = new FileWriter(file.substring(0, file.length() - 4) + 
-            		"_" + modelName + file.substring(file.length() - 4, file.length()));
+            		"_" + modelNameFile + file.substring(file.length() - 4, file.length()));
 
         	
         	if (!models.contains(modelName)) {
@@ -277,6 +279,7 @@ public class FileIO {
         	}
         	
         	EpitheliumGrid grid = simulation.getGridAt(0);
+    		grid.updateStateCounts(simulation.getEpithelium().getAllPhenotypes());
         	Map<LogicalModel, Map<String, Float>> percents = grid.getPhenoPercents();
     		Map<String, Float> perc = percents.get(model);
     		
@@ -292,8 +295,9 @@ public class FileIO {
     		}
 			csvWriter.append("\n");
 
-        	for (int i = 0; i < iteration; i++) {
+        	for (int i = 1; i < iteration; i++) {
         		grid = simulation.getGridAt(i);
+        		grid.updateStateCounts(simulation.getEpithelium().getAllPhenotypes());
            		percents = grid.getPhenoPercents();
         		
         		keys = new ArrayList(perc.keySet());

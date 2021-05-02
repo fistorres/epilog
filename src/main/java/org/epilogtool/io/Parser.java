@@ -12,11 +12,11 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
@@ -25,6 +25,7 @@ import org.colomoto.biolqm.modifier.perturbation.MultiplePerturbation;
 import org.colomoto.biolqm.modifier.perturbation.RangePerturbation;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
 import org.colomoto.biolqm.tool.simulation.grouping.SplittingType;
+import org.colomoto.biolqm.tool.simulation.random.RandomUpdaterWithRates;
 import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.VarInfo;
 import org.colomoto.biolqm.widgets.UpdaterFactoryModelGrouping;
 import org.colomoto.biolqm.tool.simulation.LogicalModelUpdater;
@@ -45,6 +46,7 @@ import org.epilogtool.notification.NotificationManager;
 import org.epilogtool.project.Project;
 import org.epilogtool.project.ProjectFeatures;
 import org.epilogtool.services.TopologyService;
+import org.sbml.jsbml.validator.offline.constraints.LayoutModelPluginConstraints;
 
 public class Parser { 
 	
@@ -59,6 +61,14 @@ public class Parser {
 		updatersEpiBioLQM.put("RU", "Random uniform");
 		updatersEpiBioLQM.put("S", "Synchronous");
 	}
+	public static Map<String, String> updatersBioLQMEpi;
+	static {
+		updatersBioLQMEpi = new HashMap<>();
+		updatersBioLQMEpi.put("Random non uniform","RN");
+		updatersBioLQMEpi.put("Random uniform", "RU");
+		updatersBioLQMEpi.put("Synchronous", "S");
+	}
+
 
 	public static void loadConfigurations(File fConfig) throws IOException, InstantiationException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
@@ -193,15 +203,15 @@ public class Parser {
 				}
 			}
 			// alpha-asynchronous value
-			if (line.startsWith("AS")) {
+			if (line.startsWith("AS") || line.startsWith("CU")) {
 				parseEpitheliumUpdateMode(currEpi, line, true);
 			}
 
-			// Cell Update
-			if (line.startsWith("CU")) {
-				String updateCells = line.substring(line.indexOf(" ") + 1);
-				currEpi.getUpdateSchemeInter().setUpdateCells(UpdateCells.fromString(updateCells));
-			}
+//			// Cell Update
+//			if (line.startsWith("CU")) {
+//				String updateCells = line.substring(line.indexOf(" ") + 1);
+//				currEpi.getUpdateSchemeInter().setUpdateCells(UpdateCells.fromString(updateCells));
+//			}
 
 			// Initial Conditions grid
 			if (line.startsWith("IC")) {
@@ -446,11 +456,11 @@ public class Parser {
 					
 			if (epi.hasModel(m)) {
 				ModelGrouping mpc = epi.getPriorityClasses(m);
-				w.println("PR " + mName + " " + mpc.toString());
+				w.println("PR " + mName + " " +	getMpcText(mpc));
 			}
+			
 			w.println();
 		}
-		
 
 		// Model All Perturbations
 		// old -> PT #model (Perturbation) R G B cell1-celli,celln,...
@@ -491,7 +501,6 @@ public class Parser {
 					if (phenos != null)
 						for (Phenotype pheno : phenos)
 							w.print("PH " + model + " " + pheno.getName() + " " + pheno.getPheno() + "\n");
-
 				}
 		}
 		w.println();
@@ -509,9 +518,10 @@ public class Parser {
 			LogicalModel m = Project.getInstance().getModel(model);
 			if (epi.hasModel(m)) {
 				Set<Phenotype> phenos = epi.getPhenotypes().getPhenotypes(m);
-				for (Phenotype pheno : phenos)
-				 text += "PH " + model + " " + pheno.getName() + " " + pheno.getPheno() + "\n";
-
+				if (phenos != null) {
+					for (Phenotype pheno : phenos)
+						 text += "PH " + model + " " + pheno.getName() + " " + pheno.getPheno() + "\n";
+				}
 			}
 			text += "\n";
 		}
@@ -529,7 +539,7 @@ public class Parser {
 			if (epi.hasModel(m)) {
 				ModelGrouping mpc = epi.getPriorityClasses(m);
 				// Uses model name and not integer key, since the key is random for each parsing.
-				 text += "PR " + model + " " + mpc.toString();
+				 text += "PR " + model + " " + getMpcText(mpc);
 			}
 			text += "\n";
 		}
@@ -537,6 +547,16 @@ public class Parser {
 	}
 	public static String getTextFormatEpitheliumUpdateMode(Epithelium epi) {
 		String text = "AS " + epi.getUpdateSchemeInter().getAlpha();
+		text += "\n";
+		
+		EnumRandomSeed rsType = epi.getUpdateSchemeInter().getRandomSeedType();
+		text += "SD " + rsType.toString();
+		if (rsType.equals(EnumRandomSeed.FIXED)) 
+			text += " " + epi.getUpdateSchemeInter().getRandomSeed();
+				
+		text += "\n";
+		text += "CU " + epi.getUpdateSchemeInter().getUpdateCells();
+		
 		return text;
 	}
 	public static String getTextFormatInputDef(Epithelium epi) {
@@ -546,7 +566,7 @@ public class Parser {
 			ComponentIntegrationFunctions cif = epi.getIntegrationFunctionsForComponent(node);
 			List<String> lFunctions = cif.getFunctions();
 			for (int i = 0; i < lFunctions.size(); i++) {
-				text += "IF " + " " + node.getNodeID() + " " + (i + 1) + " " + lFunctions.get(i);
+				text += "IF " + " " + node.getNodeID() + " " + (i + 1) + " " + lFunctions.get(i) + "\n";
 			}
 		}
 		return text;
@@ -596,6 +616,8 @@ public class Parser {
 			if (definitions.startsWith("PH")) { 
 					String[] saTmp = definitions.split("\\s+");
 					LogicalModel m = Project.getInstance().getModel(saTmp[1]);
+					if (!(saTmp[3].length() == m.getComponents().size()))
+						return false;
 					if (save) 
 						epi.addPheno(m, saTmp[2], saTmp[3]);
 			}
@@ -608,122 +630,162 @@ public class Parser {
 	public static boolean parseCelullarUpdateMode(Epithelium epi, String definitions, boolean valid) throws NumberFormatException, IOException {
 		
 		String[] saTmp;
-		try {
-			
-			saTmp = definitions.split("\\s+");
-			LogicalModel m = Project.getInstance().getModel(saTmp[1]);
-			
-			Map<Integer, Map<List<VarInfo>, LogicalModelUpdater>> pcList = 
-					new HashMap<Integer, Map<List<VarInfo>, LogicalModelUpdater>>();
+		if (definitions.startsWith("PR")) {
 
-			String[] ranks = saTmp[2].split(SEPCLASS);
-			int rankCount = 0;
-			for (String rank : ranks) {
-				
-				Map<List<VarInfo>, LogicalModelUpdater> newGroups 
-				= new HashMap<List<VarInfo>, LogicalModelUpdater>();
-				
-				for(String group : rank.split(SEPGROUP)) {
-						String[] groupTemp = group.split(SEPUPDATER);
-					
-					LogicalModelUpdater up = null;
-					
-					String[] vars =  null;
-					if (groupTemp.length == 1) {
-						try {
-							up = UpdaterFactoryModelGrouping.getUpdater(m,"Synchronous");
-						} catch (Exception ex) {
-							return false;
-						}
-						vars =  groupTemp[0].split(SEPVAR);
-
-					} else if (groupTemp.length == 2) {
-					
-						String updater = groupTemp[1];
-						if (groupTemp[1].length() > 2) {
-							String[] rates = updater.substring(3, updater.length() - 1).split(",");
-							if (rates.length != m.getComponents().size()*2) 
-								return false;
-							updater = updater.substring(0,2);
-							Double[] doubleRates = new Double[rates.length];
-							for (int e = 0; e < doubleRates.length; e++) {
-								Double rate = (rates[e].equals("null")) ? null : Double.parseDouble(rates[e]);
-								doubleRates[e] = rate;
-							}
-						
-							up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater),
-									doubleRates);
-							vars =  groupTemp[0].split(SEPVAR);
-
-						} else {
-							up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater));
-							vars =  groupTemp[0].split(SEPVAR);
-						}
-					}
-			
-					List<VarInfo> newVars = new ArrayList<VarInfo>();
-					boolean varFound = false;
-					for (String var : vars) {
-						varFound = false;
-						int split = 0;
-						if (var.endsWith(SplittingType.NEGATIVE.toString())) {
-							split = -1;
-							var = var.substring(0, var.length() - SplittingType.NEGATIVE.toString().length());
-						} else if (var.endsWith(SplittingType.POSITIVE.toString())) {
-							split = 1;
-							var = var.substring(0, var.length() - SplittingType.POSITIVE.toString().length());
-						}
-						for (int idx = 0; idx < m.getComponents().size(); idx++) {
-							NodeInfo node = m.getComponents().get(idx);
-							// find Node with var nodeID
-							if (node.getNodeID().equals(var)) {
-								VarInfo newVar = new VarInfo (idx, split, m);
-								newVars.add(newVar);
-								varFound = true;
-							}
-						} if (varFound == false) 
-							return false;
-					}
-					newGroups.put(newVars, up);
-				}
-				pcList.put(rankCount, newGroups);
-				rankCount ++;
-			}
-
-			ModelGrouping mpc = null;
 			try {
-				mpc = new ModelGrouping(m, pcList);
-				if (mpc.getClass(0).isEmpty()) 
+				saTmp = definitions.split("\\s+");
+				LogicalModel m = Project.getInstance().getModel(saTmp[1]);
+			
+				Map<Integer, Map<List<VarInfo>, LogicalModelUpdater>> pcList = 
+				new HashMap<Integer, Map<List<VarInfo>, LogicalModelUpdater>>();
+
+				String[] ranks = saTmp[2].split(SEPCLASS);
+				int rankCount = 0;
+				for (String rank : ranks) {
+				
+					Map<List<VarInfo>, LogicalModelUpdater> newGroups 
+						= new HashMap<List<VarInfo>, LogicalModelUpdater>();
+					
+					for(String group : rank.split(SEPGROUP)) {
+						String[] groupTemp = group.split(SEPUPDATER);
+						LogicalModelUpdater up = null;
+					
+						String[] vars =  null;
+						if (groupTemp.length == 1) {
+							try {
+								up = UpdaterFactoryModelGrouping.getUpdater(m,"Synchronous");
+							} catch (Exception ex) {
+								return false;
+							}
+							vars =  groupTemp[0].split(SEPVAR);
+						} else if (groupTemp.length == 2) {
+					
+							String updater = groupTemp[1];
+							if (groupTemp[1].length() > 2) {
+								vars =  groupTemp[0].split(SEPVAR);
+								String[] tmpRates = groupTemp[1].substring(3, groupTemp[1].length()).split(",");
+								if (vars.length != tmpRates.length)
+									return false;
+								
+								Double[] doubleRates = getMpcRatesArray(m, rank);
+						
+								up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater.substring(0, 2)),
+									doubleRates);
+
+							} else {
+								vars =  groupTemp[0].split(SEPVAR);
+								up = UpdaterFactoryModelGrouping.getUpdater(m, updatersEpiBioLQM.get(updater));
+							}
+						}
+			
+						List<VarInfo> newVars = new ArrayList<VarInfo>();
+						boolean varFound = false;
+						for (String var : vars) {
+							varFound = false;
+							int split = 0;
+							if (var.endsWith(SplittingType.NEGATIVE.toString())) {
+								split = -1;
+								var = var.substring(0, var.length() - SplittingType.NEGATIVE.toString().length());
+							} else if (var.endsWith(SplittingType.POSITIVE.toString())) {
+								split = 1;
+								var = var.substring(0, var.length() - SplittingType.POSITIVE.toString().length());
+							}
+							for (int idx = 0; idx < m.getComponents().size(); idx++) {
+								NodeInfo node = m.getComponents().get(idx);
+								// find Node with var nodeID
+								if (node.getNodeID().equals(var)) {
+									VarInfo newVar = new VarInfo (idx, split, m);
+									newVars.add(newVar);
+									varFound = true;
+								}
+							} if (varFound == false) 
+								return false;
+						}
+						newGroups.put(newVars, up);
+					}
+					pcList.put(rankCount, newGroups);
+					rankCount ++;
+				}
+
+				ModelGrouping mpc = null;
+				try {
+					mpc = new ModelGrouping(m, pcList);
+					if (mpc.getClass(0).isEmpty()) 
+						return false;
+					if (valid) 
+						epi.setPriorityClasses(mpc);
+					return true;
+				} catch (Exception e) {
+					e.printStackTrace();
 					return false;
-				if (valid) 
-					epi.setPriorityClasses(mpc);
-				return true;
-			} catch (Exception e) {
-				e.printStackTrace();
+				}
+			}  catch (Exception ae) {
 				return false;
 			}
-		}  catch (Exception ae) {
+		} return false;
+	}
+	
+	
+	public static boolean parseUpdCells(Epithelium epi, String definitions, boolean valid)  {
+
+		String updateCells = definitions.substring(definitions.indexOf(" ") + 1);
+		UpdateCells cells = UpdateCells.fromString(updateCells);
+		if (cells == null)
+			return false;
+		if (valid) 
+			epi.getUpdateSchemeInter().setUpdateCells(cells);
+		return true;
+	}
+	
+	public static boolean parseSeedGen(Epithelium epi, String definitions, boolean valid) {
+
+			String[] saTmp = definitions.split("\\s+");
+			EnumRandomSeed rsType = EnumRandomSeed.string2RandomSeed(saTmp[1]);
+			if (rsType != null && rsType.equals(EnumRandomSeed.FIXED)) {
+				
+				if (saTmp.length == 3) {
+					int seed = Integer.parseInt(saTmp[2]);
+					if (valid) {
+						epi.getUpdateSchemeInter().setRandomSeedType(rsType);
+						epi.getUpdateSchemeInter().setRandomSeed(seed);
+					}
+				} else {
+					NotificationManager.warning("Parser", "File with an undefined Fixed Random Seed");
+					return false;
+				}
+			} else {
+				return false;
+			}
+		
+		return true;
+	}
+	
+	public static boolean parseAS(Epithelium epi, String definitions,boolean valid) {
+		
+		String[] saTmp = definitions.split("\\s+");
+		try {
+			Float alfa = Float.parseFloat(saTmp[1]);
+			if (valid) 
+				epi.getUpdateSchemeInter().setAlpha(alfa);
+		} catch (Exception e) {				
 			return false;
 		}
+		return true;
 	}
 	
 	public static boolean parseEpitheliumUpdateMode(Epithelium epi, String definitions,
 			boolean valid) throws IOException {		
 		
-		String[] saTmp;
+		boolean isValid = false;
 			
 		if (definitions.startsWith("AS")) {
-			saTmp = definitions.split("\\s+");
-			try {
-				Float alfa = Float.parseFloat(saTmp[1]);
-				if (valid) 
-					epi.getUpdateSchemeInter().setAlpha(alfa);
-				return true;
-			} catch (Exception e) {				
-				return false;
-			}
+			isValid = parseAS(epi, definitions, valid);
+		} else if (definitions.startsWith("CU")){
+			isValid = parseUpdCells(epi, definitions, valid);
+		} else if (definitions.startsWith("SD")) {
+			isValid = parseSeedGen(epi,definitions, valid);
 		}
-	return false;
+	return isValid;
 	}
 	
 	public static boolean parseInputDef(Epithelium epi, String definitions, boolean valid) throws NumberFormatException, IOException {
@@ -860,6 +922,119 @@ public class Parser {
 		}
 		return s;
 	}
+	
+	private static String getMpcText(ModelGrouping mpc) {
+		String sPCs = "";
+		
+		// for each rank
+		for (int idxPC = 0; idxPC < mpc.size(); idxPC++) {
+			
+			List<String> pcVars = mpc.getClassVars(idxPC).get(0);
+			// join vars
+			sPCs += join(pcVars, SEPVAR);
+			
+			// get updater
+			String upName = mpc.getGroupUpdaterName(idxPC, 0);
+			String upShort = updatersBioLQMEpi.get(upName);
+			
+			sPCs += "$" + upShort;
+						
+			// if updater is random with rates
+			// we correct from [null,null,1.0,1.0] to [1.0,1.0] 
+			if (upName.equals("Random non uniform")) {
+				Double[] rates = ((RandomUpdaterWithRates) mpc.getUpdater(idxPC, 0)).getRates();
+				ArrayList<Double> someRates = new ArrayList<Double>();
+				for (int r = 0, v = 0; r < rates.length - 1; r += 2) {
+					
+					if (rates[r] != null || (r + 1 < rates.length && rates[r + 1] != null)) {
+						String var = pcVars.get(v);
+						String nextVar = null;
+						if (v + 1 < pcVars.size())
+							nextVar = pcVars.get(v + 1);
+						
+						if (var.endsWith(SplittingType.NEGATIVE.toString())) {
+							someRates.add(rates[r]);
+							
+							if (nextVar != null && 
+									nextVar.endsWith(SplittingType.POSITIVE.toString())) {
+								
+								String nextTmp = nextVar.substring(0, nextVar.length() - 
+										SplittingType.POSITIVE.toString().length());
+								String thisTmp = var.substring(0, var.length() - 
+										SplittingType.NEGATIVE.toString().length());
+								
+								if (thisTmp.equals(nextTmp)) {
+									someRates.add(rates[r + 1]);
+									v++;
+								}
+							}
+						} else {
+							someRates.add(rates[r + 1]);
+						}
+						v++;
+					} 
+				}
+				Double[] ratesArray = new Double[someRates.size()];
+				for (int r = 0; r < someRates.size(); r ++)
+					ratesArray[r] = someRates.get(r);
+				
+				sPCs += Arrays.toString(ratesArray);
+			}
+		if (idxPC < mpc.size() - 1)
+			sPCs += SEPCLASS;
+		}
+		return sPCs.replace(" ", "");
+	}	
+	
+//	private static Double[] getMpcRatesArray(ModelGrouping mpc, int idxPC) {
+//		
+//		List<String> pcVars = mpc.getClassVars(idxPC).get(0);
+//		Double[] rates = new Double[pcVars.size()];
+//		
+//		Map<String, Double> upRates = mpc.getRates(idxPC, 0, pcVars);
+//		
+//		for (int v = 0; v < pcVars.size(); v++) 
+//			rates[v] = upRates.get(pcVars.get(v));
+//		
+//		return rates;
+//	}
+	
+	private static Double[] getMpcRatesArray(LogicalModel m, String mpcClass) { 
+		
+		List<NodeInfo> nodes = m.getComponents();
+	
+		String[] varUp = mpcClass.split(SEPUPDATER);
+		String[] vars = varUp[0].split(SEPVAR);
+				
+		String[] stRates = varUp[1].substring(3, varUp[1].length()-1).split(",");
+		Double[] upRates = new Double[nodes.size()*2];
+		Arrays.fill(upRates, null);
+		int varIdx;
+				
+		for (int n = 0, r = 0; n < nodes.size(); n++) {
+			if (nodes.get(n).isInput()) {
+				continue;
+			}
+			String var = nodes.get(n).getNodeID();
+			String varPos = var + SplittingType.POSITIVE.toString();
+			String varNeg = var + SplittingType.NEGATIVE.toString();
+					
+			if (Arrays.asList(vars).contains(var)) {
+				upRates[n*2] = Double.parseDouble(stRates[r]);
+				upRates[n*2 + 1] = Double.parseDouble(stRates[r]);
+				System.out.println(var);
+			} 
+			if (Arrays.asList(vars).contains(varPos)) {
+				upRates[n*2 + 1] = Double.parseDouble(stRates[r + 1]);
+				System.out.println(varPos);
+			}
+			if (Arrays.asList(vars).contains(varNeg)) {
+				upRates[n*2] = Double.parseDouble(stRates[r]);
+				System.out.println(varNeg);
+			}
+			r++;
+		}
 
-
+		return upRates;
+	}
 }

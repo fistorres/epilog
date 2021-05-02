@@ -46,21 +46,6 @@ public class DialogEditPreferences extends EscapableDialog {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(3, 3, 3, 3);
 
-		// State percentage in grid
-		c.gridx = 0;
-		c.gridy = 0;
-		this.panelSimulation.add(new JLabel(EnumStatePercent.title()), c);
-		this.jcbGridStatePercent = new JComboBox<EnumStatePercent>(
-				new EnumStatePercent[] { EnumStatePercent.NO, EnumStatePercent.YES });
-		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
-		for (int i = 0; i < this.jcbGridStatePercent.getItemCount(); i++) {
-			if (statePercent != null && statePercent.equals(this.jcbGridStatePercent.getItemAt(i).toString()))
-				this.jcbGridStatePercent.setSelectedIndex(i);
-			}
-		c.gridx = 1;
-		c.gridy = 0;
-		this.panelSimulation.add(this.jcbGridStatePercent, c);
-		
 		// Node percentage in grid
 		c.gridx = 0;
 		c.gridy = 1;
@@ -128,10 +113,6 @@ public class DialogEditPreferences extends EscapableDialog {
 
 	public String getOptionOrderedNodes() {
 		return ((EnumOrderNodes) this.jcbOrderedComponents.getSelectedItem()).toString();
-	}
-	
-	public String getOptionStatePercent() {
-		return ((EnumStatePercent) this.jcbGridStatePercent.getSelectedItem()).toString();
 	}
 	
 

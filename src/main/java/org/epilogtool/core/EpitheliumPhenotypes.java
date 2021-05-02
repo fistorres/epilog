@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -13,14 +14,14 @@ import org.colomoto.biolqm.LogicalModel;
 
 public class EpitheliumPhenotypes {
 	
-	public Map<LogicalModel,Set<Phenotype>> phenotypesToTrack;
+	public Map<LogicalModel,LinkedHashSet<Phenotype>> phenotypesToTrack;
 	
 	public EpitheliumPhenotypes() {
-		this.phenotypesToTrack = new HashMap<LogicalModel, Set<Phenotype>>();
+		this.phenotypesToTrack = new HashMap<LogicalModel, LinkedHashSet<Phenotype>>();
 	}
 	
 	public void addModel(LogicalModel model) {
-		this.phenotypesToTrack.put(model, new HashSet<Phenotype>());
+		this.phenotypesToTrack.put(model, new LinkedHashSet<Phenotype>());
 		
 	}
 
@@ -33,7 +34,7 @@ public class EpitheliumPhenotypes {
 		return this.phenotypesToTrack.get(m);
 	}
 	
-	public Map<LogicalModel,Set<Phenotype>> getPhenotypes() {
+	public Map<LogicalModel, LinkedHashSet<Phenotype>> getPhenotypes() {
 		return this.phenotypesToTrack;
 	}
 
@@ -87,7 +88,7 @@ public class EpitheliumPhenotypes {
 		EpitheliumPhenotypes newPhenos = new EpitheliumPhenotypes();
 		
 		for (LogicalModel m : this.phenotypesToTrack.keySet()) {
-			Set<Phenotype> phenosClone = new HashSet<Phenotype>();
+			Set<Phenotype> phenosClone = new LinkedHashSet<Phenotype>();
 			for (Phenotype pheno : this.phenotypesToTrack.get(m))
 				phenosClone.add(pheno.clone());
 			
@@ -99,7 +100,7 @@ public class EpitheliumPhenotypes {
 
 	public boolean equals(Object o) {
 		EpitheliumPhenotypes phenoOut = (EpitheliumPhenotypes) o;
-		Set<LogicalModel> sAllModels = new HashSet<LogicalModel>();
+		Set<LogicalModel> sAllModels = new LinkedHashSet<LogicalModel>();
 		sAllModels.addAll(this.phenotypesToTrack.keySet());
 		sAllModels.addAll(phenoOut.phenotypesToTrack.keySet());
 		

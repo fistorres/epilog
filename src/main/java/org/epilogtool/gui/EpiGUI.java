@@ -461,7 +461,6 @@ public class EpiGUI extends JFrame {
 		if (dialogPanel.isDefined()) {
 			OptionStore.setOption("PrefsNodePercent", dialogPanel.getOptionNodePercent());
 			OptionStore.setOption("PrefsAlphaOrderNodes", dialogPanel.getOptionOrderedNodes());
-			OptionStore.setOption("PrefsStatePercent", dialogPanel.getOptionStatePercent());
 
 		}
 	}

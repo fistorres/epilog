@@ -284,10 +284,7 @@ public class EpiTabSimulation extends EpiTabTools {
 				EpiGUI.getInstance().showPhenosDialog(simulation, iCurrSimIter);
 			}
 		});
-		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
-		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
-			jpButtonsR.add(jbPhenoStats);
-		}
+		jpButtonsR.add(jbPhenoStats);
 
 		// jpButtons.setPreferredSize(new
 		// Dimension(jpButtons.getPreferredSize().width+110,
@@ -768,14 +765,10 @@ public class EpiTabSimulation extends EpiTabTools {
 	private void simulationFastFwr() {
 		
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
-		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
 		
 		EpitheliumGrid nextGrid = this.simulation.getGridAt(this.iCurrSimIter);
 		for (int i = 0; i < this.iUserBurst; i++) {
 			nextGrid = this.simulation.getGridAt(this.iCurrSimIter + 1);
-			if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) 
-				nextGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
-			
 			if (this.simulation.isStableAt(this.iCurrSimIter + 1)) {
 				setGridGUIStable(true);
 				break;
@@ -816,15 +809,11 @@ public class EpiTabSimulation extends EpiTabTools {
 		this.jbRewind.setEnabled(true);
 		this.jbBack.setEnabled(true);
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
-		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
 
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
 			nextGrid.updateNodeValueCounts();
 		}
 		
-		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
-			nextGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
-		}
 		this.updateComponentList(this.jccbSBML.getSelectedItems());
 		// Re-Paint
 		this.repaint();
@@ -841,16 +830,12 @@ public class EpiTabSimulation extends EpiTabTools {
 		this.jbForward.setEnabled(true);
 		this.jbFastFwr.setEnabled(true);
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
-		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
 
 
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
 			firstGrid.updateNodeValueCounts();
 		}
 		
-		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
-			firstGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
-		}
 
 		this.updateComponentList(this.jccbSBML.getSelectedItems());
 		// Re-Paint
@@ -875,16 +860,11 @@ public class EpiTabSimulation extends EpiTabTools {
 		this.jbForward.setEnabled(true);
 		this.jbFastFwr.setEnabled(true);
 		String nodePercent = (String) OptionStore.getOption("PrefsNodePercent");
-		String statePercent = (String) OptionStore.getOption("PrefsStatePercent");
-
 
 		if (nodePercent != null && nodePercent.equals(EnumNodePercent.YES.toString())) {
 			prevGrid.updateNodeValueCounts();
 		}
 		
-		if (statePercent != null && statePercent.equals(EnumStatePercent.YES.toString())) {
-			prevGrid.updateStateCounts(this.epithelium.getAllPhenotypes());
-		}
 		this.updateComponentList(this.jccbSBML.getSelectedItems());
 		// Re-Paint
 		this.repaint();

@@ -7,6 +7,7 @@ import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
+import org.epilogtool.core.EpitheliumPhenotypes;
 import org.epilogtool.io.Parser;
 import org.epilogtool.project.Project;
 
@@ -25,10 +26,9 @@ public class PhenotypesEditByTextDialog extends DialogEditByText {
 		String vars = "";
 		Set<LogicalModel> modelSet = this.epi.getEpitheliumGrid().getModelSet();
 		for (LogicalModel m : modelSet) {
-			vars += "Model: ";
 			String modelName = Project.getInstance().getInstance().getModelName(m);
 			vars += modelName.substring(0, modelName.length() - 5);
-			vars += ":  ";
+			vars += " model:  ";
 			int size = 0;
 			for (NodeInfo var: m.getComponents()) {
 				vars += var.getNodeID();
@@ -47,13 +47,19 @@ public class PhenotypesEditByTextDialog extends DialogEditByText {
 	}
 
 	@Override
-	public void getParsing() {
-		this.def.setText(Parser.getTextFormatPhenotypes(this.epi));
+	public String getDefinitionText() {
+		return Parser.getTextFormatPhenotypes(this.epi);
 	}
 
 	@Override
 	public boolean parse(String textarea, boolean save) throws NumberFormatException, IOException {
-		return Parser.parsePhenotypes(epi, textarea, save);
+		if (save)
+			epi.setPhenotypes(new EpitheliumPhenotypes());
+		for (String line : textarea.split("\\n"))
+			if(!Parser.parsePhenotypes(epi, line, save))
+				return false;
+		
+		return true;
 
 	}
 	@Override

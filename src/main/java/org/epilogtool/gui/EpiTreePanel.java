@@ -250,18 +250,19 @@ public class EpiTreePanel extends JPanel {
 	private void getClosestSel(MouseEvent e) {
 		 int closestRow = epiTree.getClosestRowForLocation(e.getX(), e.getY());                          
          Rectangle closestRowBounds = epiTree.getRowBounds(closestRow);
-			
-			if(e.getY() >= closestRowBounds.getY() && 
-                 e.getY() < closestRowBounds.getY() + 
-                 closestRowBounds.getHeight()) {
-         	
-         		if(e.getX() > closestRowBounds.getX() && 
-                     closestRow < epiTree.getRowCount()){
-             	epiTree.setSelectionRow(closestRow);                                              }
-         } else {
-         	epiTree.setSelectionRow(-1);
-				return;
-			}
+         if (closestRowBounds != null) {
+        	 if(e.getY() >= closestRowBounds.getY() && 
+                     e.getY() < closestRowBounds.getY() + 
+                     closestRowBounds.getHeight()) {
+             	
+             		if(e.getX() > closestRowBounds.getX() && 
+                         closestRow < epiTree.getRowCount()){
+                 	epiTree.setSelectionRow(closestRow);                                              }
+             } else {
+             	epiTree.setSelectionRow(-1);
+    				return;
+    			}
+         }
 	}
 	
 	private void openPopUps(MouseEvent e) {

@@ -16,7 +16,6 @@ public class IntegrationEditByTextDialog extends DialogEditByText {
 		super(epi);
 		
 	}
-
 	
 	@Override
 	public String getHelpText() {
@@ -27,11 +26,9 @@ public class IntegrationEditByTextDialog extends DialogEditByText {
 		String vars = "";
 		Set<LogicalModel> modelSet = this.epi.getEpitheliumGrid().getModelSet();
 		for (LogicalModel m : modelSet) {
-			vars += "Model: ";
 			String modelName = Project.getInstance().getInstance().getModelName(m);
 			vars += modelName.substring(0, modelName.length() - 5);
-			vars += ":  ";
-			int size = 0;
+			vars += " model:  ";
 			for (NodeInfo var: m.getComponents()) {
 				if (var.isInput()) {
 					vars += var.getNodeID();
@@ -42,14 +39,13 @@ public class IntegrationEditByTextDialog extends DialogEditByText {
 			vars += "<br>";
 		}
 		
-		String syntax = "IT  [MODEL NAME]" +
+		String syntax = "IF  [MODEL NAME]" +
 		 "[NODE NAME]  [NODE LEVEL]  [Integration function] <br><br> " +
-		 "<b>See the documentation for detail on the Integration function syntax: </b> <br> " +
-		 "<b> Examples: </b> <br>" + 
-		 "IF Z 1 {X} & {Y:2}       -> “input Z is 1 if there isat least 1 neighbouring cell with X "
+		 "<b>See the documentation for detail on the Integration function syntax. <br> Examples: </b> <br> " +
+		 "IF Z 1 {X} & {Y:2}       -> “input Z is 1 if there is at least 1 neighbouring cell with X "
 		 + "at 1 and (possibly another cell) with Y at 2” <br> " +
-		 "IF Z 1 {X,max=2}      -> “input Z is 1 if there are at most2 neighbouring cells with X at 1 <br> " +
-		 "IF Z 2:{X[1 : 2],min=6 } | {Y:2} -> “input Z is 2 if there are at least 6 cells at distance 1 or 2" +
+		 "IF Z 1 {X, max=2}      -> “input Z is 1 if there are at most 2 neighbouring cells with X at 1 <br> " +
+		 "IF Z 2:{X[1 : 2], min=6 } | {Y:2} -> “input Z is 2 if there are at least 6 cells at distance 1 or 2" +
 		  " with X at 1 OR at least one neighbouring cell with Y at 2”";
 		 
 		return "<html><div style='text-align: left;'> <b>" + varOder + "</b> <br>" + vars + "<br><b>" + 
@@ -71,15 +67,19 @@ public class IntegrationEditByTextDialog extends DialogEditByText {
 //	}
 
 	@Override
-	public void getParsing() {
-		this.def.setText(Parser.getTextFormatInputDef(this.epi));
+	public String getDefinitionText() {
+		return Parser.getTextFormatInputDef(this.epi);
 	}
 
 	@Override
 	public boolean parse(String textarea, boolean save) throws NumberFormatException, IOException {
-		return Parser.parseInputDef(epi, textarea, save);
+		for (String line : textarea.split("\\n"))
+			if(!Parser.parseInputDef(epi, line, save))
+				return false;
+	
+		return true;	
 	}
-
+	
 	@Override
 	public String getTabName() {
 		return TAB_INTEGRATION;

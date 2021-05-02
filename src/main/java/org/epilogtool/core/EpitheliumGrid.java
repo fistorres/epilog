@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -372,8 +373,9 @@ public class EpitheliumGrid {
 		return this.phenoPercents;
 	}
 	
-	public void updateStateCounts(Map<LogicalModel,Set<Phenotype>>phenotypes) {
+	public void updateStateCounts(Map<LogicalModel, LinkedHashSet<Phenotype>>phenotypes) {
         
+		this.phenoCounts.clear();
 		for (int x = 0; x < this.getX(); x++) {
 			for (int y = 0; y < this.getY(); y++) {
 				byte[] cellState = this.getCellState(x, y);

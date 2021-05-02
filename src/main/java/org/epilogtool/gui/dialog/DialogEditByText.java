@@ -10,36 +10,23 @@ import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import org.colomoto.biolqm.LogicalModel;
-import org.colomoto.biolqm.NodeInfo;
-import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.Txt;
 import org.epilogtool.core.Epithelium;
-import org.epilogtool.core.topology.RollOver;
 import org.epilogtool.gui.EpiGUI;
-import org.epilogtool.gui.EpiGUI.TabChangeNotifyProj;
 import org.epilogtool.gui.color.ColorUtils;
-import org.epilogtool.project.Project;
 
 public abstract class DialogEditByText extends EscapableDialog {
 	
@@ -105,9 +92,9 @@ public abstract class DialogEditByText extends EscapableDialog {
 		this.applyAndClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			try {
-				helpParse(def.getText(), true);
+				parse(def.getText(), true);
 //				EpiGUI.getInstance().alertEditByTextChanges(getThis());
-				close();
+				dispose();
 			} catch (NumberFormatException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -122,7 +109,7 @@ public abstract class DialogEditByText extends EscapableDialog {
 		this.buttonCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				close();
+				dispose();
 			}
 		});
 
@@ -173,8 +160,11 @@ public abstract class DialogEditByText extends EscapableDialog {
 		this.jpCenter.add(this.help);
 		this.add(jpCenter, BorderLayout.CENTER);
 		
-		this.setHelpText();;
-		this.getParsing();
+		this.helpText.setText(this.getHelpText());
+		this.helpText.setFont(this.helpText.getFont().
+				deriveFont(this.helpText.getFont().getStyle() & ~Font.BOLD));
+
+		this.def.setText(this.getDefinitionText());
 
 	}
 	
@@ -184,37 +174,9 @@ public abstract class DialogEditByText extends EscapableDialog {
 		return this;
 	}
 	
-	public void setHelpText() {
-//		String varOder = Txt.get("s_VAR_ORDER_HELP_PARSING");
-//		String vars = "";
-//		Set<LogicalModel> modelSet = this.epi.getEpitheliumGrid().getModelSet();
-//		for (LogicalModel m : modelSet) {
-//			vars += "Model: ";
-//			vars += Project.getInstance().getInstance().getModelName(m);
-//			vars += ":  ";
-//			int size = 0;
-//			for (NodeInfo var: m.getComponents()) {
-//				vars += var.getNodeID();
-//				vars += ",";
-//			}
-//
-//			vars = vars.substring(0, vars.length() - 1);
-//			vars += "<br>";
-//		}
-//		
-//		String header = Txt.get("S_HELP_PARSING");
-//		String unique = this.getHelpText();
-//		System.out.println(unique);
-		
-		this.helpText.setText(this.getHelpText());
-		this.helpText.setFont(this.helpText.getFont().
-				deriveFont(this.helpText.getFont().getStyle() & ~Font.BOLD));
-
-	}
-	
 	public abstract String getHelpText();
 	
-	public abstract void getParsing();
+	public abstract String getDefinitionText();
 	
 	public void loadFile(String filename) throws IOException {
 		this.def.setText("");
@@ -237,24 +199,12 @@ public abstract class DialogEditByText extends EscapableDialog {
 			this.parseOK = true;
 		this.def.setBackground(this.parseOK ? Color.WHITE
 				: ColorUtils.LIGHT_RED);
-		this.validConfig();
+		
+		this.applyAndClose.setEnabled(this.parseOK);
+
 	}
-	
-	public void helpParse(String textarea, boolean save) throws NumberFormatException, IOException {
-		for (String line : textarea.split("\\n"))
-			parse(line, save);
-	}
-	
 	
 	public abstract boolean parse(String textarea, boolean save) throws NumberFormatException, IOException;
-		
-	public void close() {
-		this.dispose();
-	};
-	
-	public void validConfig() {
-		this.applyAndClose.setEnabled(this.parseOK);
-	}
 	
 	@Override
 	public void focusComponentOnLoad() {

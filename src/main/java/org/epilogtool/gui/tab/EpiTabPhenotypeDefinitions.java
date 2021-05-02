@@ -1,14 +1,15 @@
 package org.epilogtool.gui.tab;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +22,15 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -42,7 +45,6 @@ import org.epilogtool.gui.widgets.JComboWideBox;
 import org.epilogtool.project.Project;
 
 public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
-
 	/**
 	 * 
 	 */
@@ -69,9 +71,9 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 
 	private JPanel tableControl;
 	
-	private int minCellSize;
-
 	private EpitheliumPhenotypes userPhenotypes;
+	
+	private boolean reordered;
 	
 	public EpiTabPhenotypeDefinitions(Epithelium e, TreePath path, TabChangeNotifyProj tabChanged) {
 		super(e, path, tabChanged);
@@ -82,6 +84,7 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 		// ---------------------------------------------------------------------------
 		// Model selection jcomboCheckBox * Code copied from EpiTabCellularUpdate
 		
+		this.reordered = false;
 		this.center.setLayout(new BorderLayout());
 
 		this.jpNorth = new JPanel(new BorderLayout());
@@ -175,7 +178,11 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 		this.tableControl.add(this.buttonsPanel, BorderLayout.NORTH);
 		
 		this.tablePane = new JScrollPane();
-		
+		this.tablePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		this.tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+//		this.tablePane.getViewport().setBackground(Color.BLUE);
+//		this.tableControl.setBackground(Color.red);
+
 		this.tableControl.add(this.tablePane, BorderLayout.CENTER);
 		this.tableControl.add(new JPanel(), BorderLayout.EAST);
 		this.tableControl.add(new JPanel(), BorderLayout.WEST);
@@ -209,6 +216,8 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 	}
 	
 	private void updatePhenoTable() {
+		// update the GUI if a new model is selected
+		
 		BorderLayout centerLayout = (BorderLayout) this.center.getLayout();
 		JPanel tmpTableControl = (JPanel) centerLayout.getLayoutComponent(BorderLayout.CENTER);
 		BorderLayout tControlLayout = (BorderLayout) tmpTableControl.getLayout();
@@ -222,12 +231,12 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 		this.tableControl.add(this.tablePane, BorderLayout.CENTER);
 		this.center.add(this.tableControl, BorderLayout.CENTER);
 		
-		this.tablePane.revalidate();
-		this.tablePane.repaint();
-
+		this.center.repaint();
+		this.center.revalidate();
     }
 	
 	private PhenoTable getTable(LogicalModel m) {
+		// get the JTable correspondent to a logical model
 		
 		if (!this.model2Table.containsKey(m)) {
 			PhenoTable phenoTable = new PhenoTable(m);
@@ -237,10 +246,6 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 				Set<Phenotype> phenos = this.userPhenotypes.getPhenotypes(m);
 				for (Phenotype pheno : phenos)
 					phenoTable.addFullRow(pheno.getName(), pheno.getPheno());
-//				if (phenos.size() == 0)
-//					phenoTable.addEmptyRow();
-			} else {
-//				phenoTable.addEmptyRow();
 			}
 		}
 		return this.model2Table.get(m);
@@ -261,12 +266,12 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 		}
 		this.model2Table.clear();
 		this.updatePhenoTable();
-//		this.getTable(selModel).tableModel.fireTableDataChanged();
 	}
 
 	@Override
 	protected void buttonAccept() {
 		EpitheliumPhenotypes clone = this.userPhenotypes.clone();
+		this.reordered = false;
 		this.epithelium.setPhenotypes(clone);
 		this.tablePane.revalidate();
 		this.center.repaint();
@@ -274,9 +279,17 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 
 	@Override
 	protected boolean isChanged() {
-			EpitheliumPhenotypes epiPhenos = this.epithelium.getPhenotypes();
-			if (!this.userPhenotypes.equals(epiPhenos))
-				return true;
+		// se if the phenotypes order changed
+		if (this.reordered) {
+			for (LogicalModel m : model2Table.keySet()) 
+				this.model2Table.get(m).reorder();
+			
+			return true;
+		}
+		EpitheliumPhenotypes epiPhenos = this.epithelium.getPhenotypes();
+		if (!this.userPhenotypes.equals(epiPhenos))
+			return true;
+			
 		return false;
 	}
 
@@ -300,17 +313,20 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 		this.updatePhenoTable();
 	}
 	
-	private class PhenoTable implements TableModelListener, PropertyChangeListener, Runnable {
+	private class PhenoTable implements PropertyChangeListener, Runnable {
 		
 		private LogicalModel model;
 		private String[] colnames;
 		private JTable jtable;
-		private ModelTable tableModel;		
 		
+		// track which cell is being edited, save pre-editing cell values
 		private int editingRow;
 		private int editingCol;
 		private Object editingOldValue;
 		
+		private final int minCellSizePheno = 30;
+		private final int minCellSizeName = 100;
+
 		
 		PhenoTable(LogicalModel model) {
 			this.model = model;
@@ -318,8 +334,6 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 			// Set the columns names
 			this.colnames = new String[this.model.getComponents().size() + 1];
 			this.colnames[0] = "Name";
-//			this.colnames[1] = "Track";
-//			this.colnames[2] = "Color";
 
 			// Get the components names for the new columns
 			int i = 1;
@@ -329,35 +343,54 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 			}
 
 			// create new Table
-			this.tableModel = new ModelTable(this.colnames);
-			this.jtable = new JTable(this.tableModel);	
-
-			this.jtable.addPropertyChangeListener(this);
+			this.jtable = new JTable(new DefaultTableModel(new Object[0][], this.colnames));
 			
-//			TableColumn colorCol = this.jtable.getColumnModel().getColumn(2);
-//			colorCol.setCellEditor(new ColorEditor());
-//			colorCol.setCellRenderer(new ColorRenderer());
+			
+			// See propertyChange method
+			this.jtable.addPropertyChangeListener(this);
+			this.jtable.setFillsViewportHeight( true );
+
 			
 			// Set MAX and MIN values for each component and set editor
-			this.setNodeValues();
+			int varC = 1;
+			for (NodeInfo var : this.model.getComponents()) {
+				TableColumn varCol = this.jtable.getColumnModel().getColumn(varC);
+				varCol.setCellEditor(new NodeEditor(0, var.getMax()));
+				varC ++;
+			}
+			
+			TableColumnModel colModel = this.jtable.getColumnModel();
+			
+			// AUTO RESIZE if the number of columns is not enough to fill table header (w/ min Size)
+			// If many columns, use minCellSize
+			if (!(this.colnames.length * minCellSizePheno < 
+        			this.jtable.getPreferredScrollableViewportSize().getWidth())) {
+				
+				this.jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); 
+				colModel.getColumn(0).setMinWidth(minCellSizeName);
+				
+			    for (int col = 1; col < this.colnames.length; col++) {
+			        if (col < colModel.getColumnCount()) {
+			        	colModel.getColumn(col).setMinWidth(minCellSizePheno);
+			        }
+			    }
+			}
+			    
 		}
 		
 		private JTable getTable() {
 			return this.jtable;
 		}
 			
-//		public void toggleSelect(boolean select) {
-//			for (int i = 0; i < this.jtable.getRowCount(); i++) 
-//				this.jtable.setValueAt(select, i, 1);
-//		}
-			
 		public void remove() {
+			
+			// remove a phenotype from the table
 			int[] rows = this.jtable.getSelectedRows();
 			if (rows.length > 0 &&  this.jtable.getRowCount() > 0) {
 				ArrayUtils.reverse(rows);
 				for (int row : rows) {
 					// remove from userPhenotypes
-					Vector rowData = this.tableModel.getDataVector().elementAt(row);
+					Vector<?> rowData = ((DefaultTableModel) this.jtable.getModel()).getDataVector().elementAt(row);
 		        	String phenotype = "";
 		        	
 		        	for (int i = 1; i < rowData.size(); i++)
@@ -367,11 +400,11 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 					
 					// remove from model
 			        int modelIndex = this.jtable.convertRowIndexToModel(row); 
-					this.tableModel.removeRow(modelIndex);
+			        ((DefaultTableModel) this.jtable.getModel()).removeRow(modelIndex);
 //					this.jtable.remove(row);
 					
 				}
-				this.tableModel.fireTableRowsDeleted(rows[rows.length-1], rows[0]);
+				((DefaultTableModel) this.jtable.getModel()).fireTableRowsDeleted(rows[rows.length-1], rows[0]);
 				tpc.setChanged();
 		    }
 		}
@@ -389,31 +422,35 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 //				});
 				
 			if (row != -1) {
-				Vector newClone = (Vector) this.tableModel.getDataVector().elementAt(row).clone();
+				Vector<String> newClone = (Vector) ((DefaultTableModel) 
+						this.jtable.getModel()).getDataVector().elementAt(row).clone();
 				String name = (String) newClone.get(0);
 					
-				int next = 1;
 				name += "_2";
 				newClone.remove(0);
 				newClone.add(0,name);
 				
-				this.tableModel.insertRow(row + 1, newClone);
+				((DefaultTableModel) this.jtable.getModel()).insertRow(row + 1, newClone);
 				tpc.setChanged();
 			}
 		}
 			
 		public void moveRow(int change) {
+		
 			int row = this.jtable.getSelectedRow();
 			if (row != -1) {
 				if ( (change == -1 && row != 0) ||
 						(change == 1 && row != this.jtable.getRowCount() -1)) {
-					this.tableModel.moveRow(row, row, row + change);
+					((DefaultTableModel) this.jtable.getModel()).moveRow(row, row, row + change);
+					this.jtable.setRowSelectionInterval(row + change, row + change);
 					tpc.setChanged();
 				}
 			}
+			reordered = true;
 		}
 			
 		public void addFullRow(String name, String pheno) {
+			// function to "load" phenotypes from epithelium
 				
 			Object[] tempA = new Object[this.colnames.length];
 			tempA[0] = name;
@@ -424,23 +461,22 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 			for (int i = 1, e = 0; e < phenotype.length; i++, e++)
 				tempA[i] = (char) phenotype[e];
 			
-			this.tableModel.addRow(tempA);
+			((DefaultTableModel) this.jtable.getModel()).addRow(tempA);
 		}
 			
 		public void addEmptyRow() {
 			Object[] tempA = new Object[this.colnames.length];
 			tempA[0] = "Phenotype_1";
-//			tempA[1] = false;
-//			tempA[2] = Color.black;
 			
+			// "*" is default node value
 			String phenotype = "";
 			char temp = '*';
-			for (int i = 1; i < this.tableModel.getColumnCount(); i++) {
+			for (int i = 1; i < this.jtable.getModel().getColumnCount(); i++) {
 				tempA[i] = temp;
 				phenotype += temp;
 			}
 				
-			this.tableModel.addRow(tempA);
+			((DefaultTableModel) this.jtable.getModel()).addRow(tempA);
 			userPhenotypes.addPhenotype(selModel, (String) tempA[0] ,
 				        phenotype);
 			 
@@ -448,89 +484,33 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 
 		}
 		
-		public void setNodeValues() {
-			int varC = 1;
-			for (NodeInfo var : this.model.getComponents()) {
-				final JComboBox<String> jcombob = new JComboBox<String>();
-				jcombob.addItem("*");
-				for (byte vl = 0; vl <= var.getMax(); vl++)
-					jcombob.addItem("" + vl);
-				TableColumn varCol = this.jtable.getColumnModel().getColumn(varC);
-				varCol.setCellEditor(new DefaultCellEditor(jcombob));
-//				varCol.setCellEditor(new JComboBoxEditor(jcombob));
+		public class NodeEditor extends DefaultCellEditor {
 
-				varC ++;
-			}
-		}
-		
-		@Override
-		public void tableChanged(TableModelEvent e) {
-//			int row = e.getFirstRow();
-//	        int column = e.getColumn();
-//	        
-//	        
-//	        if (this.tableModel.getRowCount() != 0 && row != -1 && column != -1) {
-//	        	Vector rowData = this.tableModel.getDataVector().elementAt(row);
-//	        	for (Object par : rowData) {
-//	        		if (par  == null) {
-//	        			break;
-//	        		}
-//	        	}
-//	        	String phenotype = "";
-//	        	for (int i = 3; i < rowData.size(); i++)
-//	        		phenotype += String.valueOf(rowData.get(i));
-//	        	
-//		        userPhenotypes.addPhenotype(selModel, (String) rowData.get(0) ,
-//		        		(Boolean) rowData.get(1), (Color) rowData.get(2), phenotype);
-//		
-//	        }
-		}
-	
-		private class ModelTable extends DefaultTableModel{
-			public ModelTable(String[] colnames) {
-				super(colnames, 0);
-			}
-
-			@Override
-			public Class<?> getColumnClass(int columnIndex) {
-				Class clazz = String.class;
-				switch (columnIndex) {
-				case 0:
-					clazz = String.class;
-					break;
-//				case 1:
-//					clazz = Boolean.class;
-//	        		break;
-//				case 2:
-//					clazz = Color.class;
-//	        		break;
-				default:
-					// ??
-					clazz = JComboBox.class;
-					break;
-				}
-				return clazz;
-			}
-		}
-		
-		public PhenoTable getInstance() {
-			return this;
-		}
-		
-		public class JComboBoxEditor extends DefaultCellEditor {
-
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1L;
+			private Integer min;
+			private Integer max;
 
-			public JComboBoxEditor(JComboBox<String> checkBox) {
-				super(checkBox);
+			public NodeEditor(int min, int max) {
+	            super(new JTextField());
+	            this.max = max;
+	            this.min = min;
 			}
-			
+		
 			@Override
-			public boolean isCellEditable(EventObject anEvent) {
-			     return true;
+			public String getCellEditorValue() {
+				 JTextField textField = (JTextField) getComponent();
+		         String o = textField.getText();
+		         
+		         // if String contains numbers, see if the value is valid for the node
+		         if (o.matches("-?\\d+")) {
+		        	 if ((Integer.parseInt(o)) <= this.min) 
+		        		 return this.min.toString();
+					 if ((Integer.parseInt(o)) >= this.max) 
+					     return this.max.toString();
+		         } else {
+		        	 return "*";
+		         }
+		        return "*";
 			}
 			
 		}
@@ -609,37 +589,63 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 //				return this;
 //			}
 //		}
+		
+		public void reorder() {
+			// method called when button accept is called. 
+			// So the user order is kept
+			
+			userPhenotypes = new EpitheliumPhenotypes();
+	    	for (int r = 0; r < this.jtable.getRowCount(); r++) {
+			    Vector<?> rowData = ((DefaultTableModel) this.jtable.getModel()).
+			    		getDataVector().elementAt(r);
+			    
+			    String pheno = "";
+			    for (int p = 1; p < this.jtable.getRowCount(); p++) 
+					pheno += String.valueOf(rowData.get(p));
+				
+			    userPhenotypes.addPhenotype(selModel, (String) rowData.get(0), pheno);
+			    int i = 0;
+			    i ++;
+	    	}
+		}
+		
+		
 		@Override 
 		public void run() {
+			
+			// save old values, to compare with new
 			this.editingRow = this.jtable.convertRowIndexToModel(this.jtable.getEditingRow());
 			this.editingCol = this.jtable.convertColumnIndexToModel(this.jtable.getEditingColumn());
 			this.editingOldValue = this.jtable.getModel().getValueAt(this.editingRow,this.editingCol);
 			
-			Component comp = this.getTable().getEditorComponent();
-//			  if (comp instanceof JComboBox) {
-//		            System.out.println("kkde");
-//		            ((JComboBox<String>) comp).showPopup();
-//			  }
-			  
-			comp.requestFocusInWindow();
+			// select all when double click happens
+			JTextComponent textField = ((JTextComponent) this.jtable.getEditorComponent());
+			textField.selectAll();
+			
 		}
 		
-//
 		@Override
 		public void propertyChange(PropertyChangeEvent e) {
 //		//  A cell has started/stopped editing
-			
+
 			if ("tableCellEditor".equals(e.getPropertyName())) {
+				
+				// select all when muse event happens
+				JTextComponent textField = ((JTextComponent) this.jtable.getEditorComponent());
+				textField.selectAll();
 			
 				if (this.jtable.isEditing()) {
 					SwingUtilities.invokeLater(this);
 				} else {
-					Object newValue =  this.tableModel.getValueAt(this.editingRow, this.editingCol);
+					
+					Object newValue =  this.jtable.getModel().getValueAt(this.editingRow, this.editingCol);
+					// if the cell value changed
 					if (!Objects.equals(newValue, this.editingOldValue)) {
 						tpc.setChanged();
 
-					    Vector rowData = this.tableModel.getDataVector().elementAt(this.editingRow);
+					    Vector<?> rowData = ((DefaultTableModel) this.jtable.getModel()).getDataVector().elementAt(this.editingRow);
 					    
+					    // see if phenotype is defined
 					    boolean valid = true;
 					    for (Object par : rowData) {
 					    	if (par  == null) {
@@ -647,6 +653,8 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 					    		break;
 					    	}
 					    }
+					    
+					    // if the phenotype is defined. Save to UserPhenotypes
 					    if (valid) {
 				    		String newName = (String) rowData.get(0);
 				    		String oldName = newName;
