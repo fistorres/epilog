@@ -373,7 +373,7 @@ public class EpitheliumGrid {
 		return this.phenoPercents;
 	}
 	
-	public void updateStateCounts(Map<LogicalModel, LinkedHashSet<Phenotype>>phenotypes) {
+	public void updatePhenoCounts(Map<LogicalModel, LinkedHashSet<Phenotype>>phenotypes) {
         
 		this.phenoCounts.clear();
 		for (int x = 0; x < this.getX(); x++) {

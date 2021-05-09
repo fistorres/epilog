@@ -279,7 +279,7 @@ public class FileIO {
         	}
         	
         	EpitheliumGrid grid = simulation.getGridAt(0);
-    		grid.updateStateCounts(simulation.getEpithelium().getAllPhenotypes());
+    		grid.updatePhenoCounts(simulation.getEpithelium().getAllPhenotypes());
         	Map<LogicalModel, Map<String, Float>> percents = grid.getPhenoPercents();
     		Map<String, Float> perc = percents.get(model);
     		
@@ -297,7 +297,7 @@ public class FileIO {
 
         	for (int i = 1; i < iteration; i++) {
         		grid = simulation.getGridAt(i);
-        		grid.updateStateCounts(simulation.getEpithelium().getAllPhenotypes());
+        		grid.updatePhenoCounts(simulation.getEpithelium().getAllPhenotypes());
            		percents = grid.getPhenoPercents();
         		
         		keys = new ArrayList(perc.keySet());

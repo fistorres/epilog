@@ -135,7 +135,8 @@ public class EpiGUI extends JFrame {
 			// javax.swing.plaf.metal.MetalLookAndFeel <- ok
 			// javax.swing.plaf.multi.MultiLookAndFeel <- X
 			// javax.swing.plaf.nimbus.NimbusLookAndFeel <- +/-
-			UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+			UIManager.setLookAndFeel("javax.swing.plaf."
+					+ "metal.MetalLookAndFeel");
 		} catch (ClassNotFoundException e2) {
 			e2.printStackTrace();
 		} catch (InstantiationException e2) {
@@ -696,7 +697,8 @@ public class EpiGUI extends JFrame {
 		SimulationStatsDialog dia = new SimulationStatsDialog(simulation, iteration);
 
 		Window win = SwingUtilities.getWindowAncestor(this);
-		JDialog dialog = new JDialog(win, "Save phenotypes statistics", ModalityType.APPLICATION_MODAL);
+		JDialog dialog = new JDialog(win, "Save phenotypes statistics", 
+				ModalityType.APPLICATION_MODAL);
 		dialog.getContentPane().add(dia);
 		dialog.pack();
 		dialog.setLocationRelativeTo(null);
