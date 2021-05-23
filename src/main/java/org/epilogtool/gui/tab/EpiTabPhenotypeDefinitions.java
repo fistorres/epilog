@@ -22,7 +22,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -273,19 +272,25 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 		EpitheliumPhenotypes clone = this.userPhenotypes.clone();
 		this.reordered = false;
 		this.epithelium.setPhenotypes(clone);
-		this.tablePane.revalidate();
-		this.center.repaint();
+		
+		this.model2Table.clear();
+		this.updatePhenoTable();
 	}
 
 	@Override
 	protected boolean isChanged() {
-		// se if the phenotypes order changed
+		// see if the phenotypes order changed
 		if (this.reordered) {
 			for (LogicalModel m : model2Table.keySet()) 
 				this.model2Table.get(m).reorder();
 			
 			return true;
 		}
+		// see if clones exists
+		for (LogicalModel m : model2Table.keySet()) 
+			if (this.getTable(m).getTable().getRowCount() != this.userPhenotypes.getPhenotypes(m).size())
+				return true;
+		
 		EpitheliumPhenotypes epiPhenos = this.epithelium.getPhenotypes();
 		if (!this.userPhenotypes.equals(epiPhenos))
 			return true;
@@ -503,14 +508,16 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 		         
 		         // if String contains numbers, see if the value is valid for the node
 		         if (o.matches("-?\\d+")) {
-		        	 if ((Integer.parseInt(o)) <= this.min) 
+		        	 if ((Integer.parseInt(o)) <= this.min)  {
 		        		 return this.min.toString();
-					 if ((Integer.parseInt(o)) >= this.max) 
+		        	 } else if ((Integer.parseInt(o)) >= this.max) {
 					     return this.max.toString();
+		        	 } else {
+						 return o;
+					 }
 		         } else {
 		        	 return "*";
 		         }
-		        return "*";
 			}
 			
 		}

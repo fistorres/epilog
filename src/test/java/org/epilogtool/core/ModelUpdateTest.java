@@ -1,6 +1,7 @@
 package org.epilogtool.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,13 +37,17 @@ public class ModelUpdateTest {
 
 	@Test
 	public void epitheliumModelUpdate() {
+		
 		// alpha
-		assertEquals(Project.getInstance().getEpitheliumList().get(0).getUpdateSchemeInter().getAlpha(), (float) 0, 96);
+		assertTrue(Project.getInstance().getEpitheliumList().get(0).getUpdateSchemeInter().getAlpha() ==
+				(float) 0.96);
 
 		// Random seed
 		assertEquals(Project.getInstance().getEpitheliumList().get(0).getUpdateSchemeInter().getRandomSeedType(),
 				EnumRandomSeed.RANDOM);
 
+		Epithelium epi = Project.getInstance().getEpitheliumList().get(0);
+		System.out.println(Project.getInstance().getEpitheliumList().get(0).getUpdateSchemeInter().getUpdateCells());
 		// Updated cells
 		assertEquals(Project.getInstance().getEpitheliumList().get(0).getUpdateSchemeInter().getUpdateCells(),
 				(UpdateCells.fromString("Only updatable cells")));

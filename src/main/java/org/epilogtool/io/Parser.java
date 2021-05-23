@@ -710,6 +710,7 @@ public class Parser {
 				ModelGrouping mpc = null;
 				try {
 					mpc = new ModelGrouping(m, pcList);
+					
 					if (mpc.getClass(0).isEmpty()) 
 						return false;
 					if (valid) 
@@ -1022,15 +1023,12 @@ public class Parser {
 			if (Arrays.asList(vars).contains(var)) {
 				upRates[n*2] = Double.parseDouble(stRates[r]);
 				upRates[n*2 + 1] = Double.parseDouble(stRates[r]);
-				System.out.println(var);
 			} 
 			if (Arrays.asList(vars).contains(varPos)) {
 				upRates[n*2 + 1] = Double.parseDouble(stRates[r + 1]);
-				System.out.println(varPos);
 			}
 			if (Arrays.asList(vars).contains(varNeg)) {
 				upRates[n*2] = Double.parseDouble(stRates[r]);
-				System.out.println(varNeg);
 			}
 			r++;
 		}
