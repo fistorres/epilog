@@ -395,7 +395,8 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 				ArrayUtils.reverse(rows);
 				for (int row : rows) {
 					// remove from userPhenotypes
-					Vector<?> rowData = ((DefaultTableModel) this.jtable.getModel()).getDataVector().elementAt(row);
+					Vector<?> rowData = ((DefaultTableModel) 
+							this.jtable.getModel()).getDataVector().elementAt(row);
 		        	String phenotype = "";
 		        	
 		        	for (int i = 1; i < rowData.size(); i++)

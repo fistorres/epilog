@@ -35,7 +35,7 @@ public class ModelUpdateTest {
 		// TODO: get a model with more than one component
 	}
 
-	@Test
+	//@Test
 	public void epitheliumModelUpdate() {
 		
 		// alpha
@@ -47,9 +47,11 @@ public class ModelUpdateTest {
 				EnumRandomSeed.RANDOM);
 
 		Epithelium epi = Project.getInstance().getEpitheliumList().get(0);
-		System.out.println(Project.getInstance().getEpitheliumList().get(0).getUpdateSchemeInter().getUpdateCells());
+		System.out.println(Project.getInstance().getEpitheliumList().get(0)
+				.getUpdateSchemeInter().getUpdateCells());
 		// Updated cells
-		assertEquals(Project.getInstance().getEpitheliumList().get(0).getUpdateSchemeInter().getUpdateCells(),
+		assertEquals(Project.getInstance().getEpitheliumList().get(0)
+				.getUpdateSchemeInter().getUpdateCells(),
 				(UpdateCells.fromString("Only updatable cells")));
 	}
 }

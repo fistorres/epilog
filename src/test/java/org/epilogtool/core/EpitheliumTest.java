@@ -30,6 +30,7 @@ public class EpitheliumTest {
 
 	@Test
 	public void EpiListTest() throws IOException {
+		Project pj = Project.getInstance();
 		assertEquals(Project.getInstance().getEpitheliumList().size(), 16);
 	}
 

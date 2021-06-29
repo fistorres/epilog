@@ -24,11 +24,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.io.LogicalModelFormat;
 import org.colomoto.biolqm.io.sbml.SBMLFormat;

@@ -70,18 +70,14 @@ public class EpiTreePanel extends JPanel {
 		this.epiTree.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				// Windows
+				checkPopUp(e);    
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-                getClosestSel(e);
-				  
-				if (e.getClickCount() == 2) {
-					checkDoubleClickEpitheliumJTree(e);
-				} else if(e.isPopupTrigger()) {
-					openPopUps(e);
-				}
-					    
+				// Linux and Mac
+				checkPopUp(e);    
 			};
 
 			@Override
@@ -264,6 +260,17 @@ public class EpiTreePanel extends JPanel {
     			}
          }
 	}
+	private void checkPopUp(MouseEvent e) {
+		getClosestSel(e);
+		  
+		if (e.getClickCount() == 2) {
+			checkDoubleClickEpitheliumJTree(e);
+		} else if(e.isPopupTrigger()) {
+			openPopUps(e);
+		}
+	}
+	
+	
 	
 	private void openPopUps(MouseEvent e) {
 			// popupmenu.updateMenuItems(listSBMLs.getSelectedValue() !=
