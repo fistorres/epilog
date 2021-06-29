@@ -1,0 +1,26 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00000001040673ec, pid=45587, tid=22531
+#
+# JRE version: OpenJDK Runtime Environment (15.0.1+9) (build 15.0.1+9)
+# Java VM: OpenJDK 64-Bit Server VM (15.0.1+9, mixed mode, sharing, tiered, compressed oops, g1 gc, bsd-amd64)
+# Problematic frame:
+# C  [libjimage.dylib+0x73ec]  _ZNK15ImageFileReader19find_location_indexEPKcPy+0x2c
+#
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -XX:+ShowCodeDetailsInExceptionMessages -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64349 -javaagent:/Users/vitortorres/eclipse/java-2020-12/Eclipse.app/Contents/Eclipse/configuration/org.eclipse.osgi/213/0/.cp/lib/javaagent-shaded.jar -Dfile.encoding=UTF-8 org.epilogtool.Launcher
+
+Host: MacBookAir6,2 x86_64 1300 MHz, 4 cores, 4G, Darwin 19.6.0
+Time: Wed Apr 28 11:32:35 2021 WEST elapsed time: 635.236644 seconds (0d 0h 10m 35s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007fb123014200):  
