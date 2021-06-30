@@ -77,7 +77,7 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 	private PriorityClassPanel getPriorityClassPanel(LogicalModel m) {
 		if (!this.mModel2PCP.containsKey(m)) {
 			ModelGrouping mpc = this.userPriorityClasses.getModelPriorityClasses(m);
-			PriorityClassPanel pcp = new PriorityClassPanel(mpc, true, true, false);
+			PriorityClassPanel pcp = new PriorityClassPanel(mpc, false, true, false);
 			pcp.addActionListener(new PanelChangedEventListener() {
 				@Override
 				public void panelChangedOccurred() {

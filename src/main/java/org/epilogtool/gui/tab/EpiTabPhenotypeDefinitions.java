@@ -437,6 +437,7 @@ public class EpiTabPhenotypeDefinitions extends EpiTabDefinitions {
 				newClone.add(0,name);
 				
 				((DefaultTableModel) this.jtable.getModel()).insertRow(row + 1, newClone);
+				this.jtable.setRowSelectionInterval(row + 1, row + 1);
 				tpc.setChanged();
 			}
 		}
