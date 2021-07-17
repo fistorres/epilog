@@ -23,10 +23,10 @@ import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
 import org.colomoto.biolqm.modifier.perturbation.FixedValuePerturbation;
 import org.colomoto.biolqm.modifier.perturbation.MultiplePerturbation;
 import org.colomoto.biolqm.modifier.perturbation.RangePerturbation;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
+import org.colomoto.biolqm.tool.simulation.grouping.PCRankGroupsVars;
 import org.colomoto.biolqm.tool.simulation.grouping.SplittingType;
 import org.colomoto.biolqm.tool.simulation.random.RandomUpdaterWithRates;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping.VarInfo;
+import org.colomoto.biolqm.tool.simulation.grouping.PCRankGroupsVars.VarInfo;
 import org.colomoto.biolqm.widgets.UpdaterFactoryModelGrouping;
 import org.colomoto.biolqm.tool.simulation.LogicalModelUpdater;
 import org.epilogtool.OptionStore;
@@ -455,7 +455,7 @@ public class Parser {
 			LogicalModel m = Project.getInstance().getModel(mName);
 					
 			if (epi.hasModel(m)) {
-				ModelGrouping mpc = epi.getPriorityClasses(m);
+				PCRankGroupsVars mpc = epi.getPriorityClasses(m);
 				w.println("PR " + mName + " " +	getMpcText(mpc));
 			}
 			
@@ -537,7 +537,7 @@ public class Parser {
 		for (String model : models) {
 			LogicalModel m = Project.getInstance().getModel(model);
 			if (epi.hasModel(m)) {
-				ModelGrouping mpc = epi.getPriorityClasses(m);
+				PCRankGroupsVars mpc = epi.getPriorityClasses(m);
 				// Uses model name and not integer key, since the key is random for each parsing.
 				 text += "PR " + model + " " + getMpcText(mpc);
 			}
@@ -707,9 +707,9 @@ public class Parser {
 					rankCount ++;
 				}
 
-				ModelGrouping mpc = null;
+				PCRankGroupsVars mpc = null;
 				try {
-					mpc = new ModelGrouping(m, pcList);
+					mpc = new PCRankGroupsVars(m, pcList);
 					
 					if (mpc.getClass(0).isEmpty()) 
 						return false;
@@ -924,7 +924,7 @@ public class Parser {
 		return s;
 	}
 	
-	private static String getMpcText(ModelGrouping mpc) {
+	private static String getMpcText(PCRankGroupsVars mpc) {
 		String sPCs = "";
 		
 		// for each rank

@@ -19,7 +19,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.tree.TreePath;
 
 import org.colomoto.biolqm.LogicalModel;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
+import org.colomoto.biolqm.tool.simulation.grouping.PCRankGroupsVars;
 import org.colomoto.biolqm.widgets.PriorityClassPanel;
 import org.colomoto.biolqm.widgets.PanelChangedEventListener;
 import org.epilogtool.common.Txt;
@@ -76,7 +76,7 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 
 	private PriorityClassPanel getPriorityClassPanel(LogicalModel m) {
 		if (!this.mModel2PCP.containsKey(m)) {
-			ModelGrouping mpc = this.userPriorityClasses.getModelPriorityClasses(m);
+			PCRankGroupsVars mpc = this.userPriorityClasses.getModelPriorityClasses(m);
 			PriorityClassPanel pcp = new PriorityClassPanel(mpc, false, true, false);
 			pcp.addActionListener(new PanelChangedEventListener() {
 				@Override
@@ -140,7 +140,7 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 		Set<LogicalModel> models = this.userPriorityClasses.getModelSet();
 		for (LogicalModel m : models) {
 			this.userPriorityClasses.accept(m);
-			ModelGrouping clone = this.userPriorityClasses.getModelPriorityClasses(m).clone();
+			PCRankGroupsVars clone = this.userPriorityClasses.getModelPriorityClasses(m).clone();
 			this.epithelium.setPriorityClasses(clone);
 			this.updatePriorityPanel();
 		}
@@ -149,8 +149,8 @@ public class EpiTabCellularModelUpdate extends EpiTabDefinitions implements Hype
 	@Override
 	protected boolean isChanged() {
 		for (LogicalModel m : this.epithelium.getEpitheliumGrid().getModelSet()) {
-			ModelGrouping mpcGUI = this.userPriorityClasses.getModelPriorityClasses(m);
-			ModelGrouping mpcEpi = this.epithelium.getPriorityClasses(m);
+			PCRankGroupsVars mpcGUI = this.userPriorityClasses.getModelPriorityClasses(m);
+			PCRankGroupsVars mpcEpi = this.epithelium.getPriorityClasses(m);
 			if (!mpcGUI.equals(mpcEpi))
 				return true;
 		}

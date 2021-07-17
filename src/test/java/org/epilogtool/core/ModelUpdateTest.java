@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.colomoto.biolqm.LogicalModel;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
+import org.colomoto.biolqm.tool.simulation.grouping.PCRankGroupsVars;
 import org.epilogtool.FileUtils;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.io.FileIO;
@@ -28,7 +28,7 @@ public class ModelUpdateTest {
 	public void cellularModelUpdate() {
 		Epithelium epi = Project.getInstance().getEpitheliumList().get(0);
 		LogicalModel m = epi.getModel(0, 0);
-		ModelGrouping epiClasses = epi.getPriorityClasses(m);
+		PCRankGroupsVars epiClasses = epi.getPriorityClasses(m);
 		assertEquals("[Red]", epiClasses.getClassVars(0).get(0).toString());
 		// assertEquals("[Red]", (ModelGrouping) epi.getPriorityClasses(m).getClassVars(0).get(0).toString());
 

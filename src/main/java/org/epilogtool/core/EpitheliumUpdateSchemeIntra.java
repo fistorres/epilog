@@ -6,17 +6,17 @@ import java.util.Map;
 import java.util.Set;
 
 import org.colomoto.biolqm.LogicalModel;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
+import org.colomoto.biolqm.tool.simulation.grouping.PCRankGroupsVars;
 
 public class EpitheliumUpdateSchemeIntra {
-	private Map<LogicalModel, ModelGrouping> priorityClassSet;
+	private Map<LogicalModel, PCRankGroupsVars> priorityClassSet;
 
 	public EpitheliumUpdateSchemeIntra() {
-		this.priorityClassSet = new HashMap<LogicalModel, ModelGrouping>();
+		this.priorityClassSet = new HashMap<LogicalModel, PCRankGroupsVars>();
 	}
 
 	public void addModel(LogicalModel m) {
-		this.priorityClassSet.put(m, new ModelGrouping(m));
+		this.priorityClassSet.put(m, new PCRankGroupsVars(m));
 	}
 
 	public void removeModel(LogicalModel m) {
@@ -24,11 +24,11 @@ public class EpitheliumUpdateSchemeIntra {
 			this.priorityClassSet.remove(m);
 	}
 
-	public ModelGrouping getModelPriorityClasses(LogicalModel m) {
+	public PCRankGroupsVars getModelPriorityClasses(LogicalModel m) {
 		return this.priorityClassSet.get(m);
 	}
 
-	public void addModelPriorityClasses(ModelGrouping mpc) {
+	public void addModelPriorityClasses(PCRankGroupsVars mpc) {
 		this.priorityClassSet.put(mpc.getModel(), mpc);
 		this.accept(mpc.getModel());
 

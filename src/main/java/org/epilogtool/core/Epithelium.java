@@ -13,7 +13,7 @@ import java.util.Set;
 import org.colomoto.biolqm.LogicalModel;
 import org.colomoto.biolqm.NodeInfo;
 import org.colomoto.biolqm.modifier.perturbation.LogicalModelPerturbation;
-import org.colomoto.biolqm.tool.simulation.grouping.ModelGrouping;
+import org.colomoto.biolqm.tool.simulation.grouping.PCRankGroupsVars;
 import org.epilogtool.common.EnumRandomSeed;
 import org.epilogtool.common.Tuple2D;
 import org.epilogtool.core.EpitheliumPhenotypes.Phenotype;
@@ -155,7 +155,7 @@ public class Epithelium {
 		return this.updateSchemeInter;
 	}
 
-	public ModelGrouping getPriorityClasses(LogicalModel m) {
+	public PCRankGroupsVars getPriorityClasses(LogicalModel m) {
 		return this.priorities.getModelPriorityClasses(m);
 	}
 
@@ -231,16 +231,16 @@ public class Epithelium {
 	}
 
 	public void initPriorityClasses(LogicalModel m) {
-		ModelGrouping mpc = new ModelGrouping(m);
+		PCRankGroupsVars mpc = new PCRankGroupsVars(m);
 		this.priorities.addModelPriorityClasses(mpc);
 	}
 
 	public void setPriorityClasses(LogicalModel m, String pcs) {
-		ModelGrouping mpc = new ModelGrouping(m, pcs);
+		PCRankGroupsVars mpc = new PCRankGroupsVars(m, pcs);
 		this.priorities.addModelPriorityClasses(mpc);
 	}
 
-	public void setPriorityClasses(ModelGrouping mpc) {
+	public void setPriorityClasses(PCRankGroupsVars mpc) {
 		this.priorities.addModelPriorityClasses(mpc);
 	}
 
@@ -405,7 +405,7 @@ public class Epithelium {
 	 */
 	public void replacePriorities(Epithelium oldEpi, LogicalModel oldModel, LogicalModel newModel,
 			List<String> commonNodeNames) {
-		ModelGrouping oldMpc = oldEpi.getPriorityClasses(oldModel);
+		PCRankGroupsVars oldMpc = oldEpi.getPriorityClasses(oldModel);
 
 		Boolean hasChanged = false;
 
